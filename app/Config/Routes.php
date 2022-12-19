@@ -35,7 +35,27 @@ $routes->set404Override();
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
-$routes->get('/', 'Home::index');
+$routes->get('/', 'Login::index');
+$routes->get('login', 'Login::index');
+$routes->post('login', 'Login::doLogin');
+$routes->get('logout', static function () {
+    $session = \Config\Services::session();
+    session_destroy();
+    return redirect()->to('/login');
+});
+$routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
+    $routes->get('/', 'Admin::index');
+    $routes->get('beranda', 'Admin::index');
+
+    // management Siswa
+    $routes->get('siswa', 'Student::index');
+    $routes->get('siswa/(:num)', 'Student::show');
+    $routes->get('siswa/tambah', 'Student::new');
+    $routes->post('siswa/tambah', 'Student::create');
+    $routes->get('siswa/edit/(:num)', 'Student::edit');
+    $routes->post('siswa/edit/(:num)', 'Student::update');
+    $routes->get('siswa/hapus/(:num)', 'Student::delete');
+});
 
 /*
  * --------------------------------------------------------------------
