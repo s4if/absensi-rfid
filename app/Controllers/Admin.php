@@ -8,6 +8,9 @@ class Admin extends BaseController
 {
     public function index()
     {
-        return view('admin/index', ['title' => 'beranda']);
+        return view('admin/index', [
+            'title' => 'beranda',
+            'alert' => $this->session->alert,
+        ]);
     }
 }

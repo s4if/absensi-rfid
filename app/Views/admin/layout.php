@@ -9,6 +9,15 @@
   </head>
   <body>
     <div class="container-fluid">
+      <?php if (!is_null($alert)) : ?>
+        <div class="row justify-content-center">
+          <div class="col-lg-6 alert alert-<?php echo $alert['type']; ?> alert-dismissible fade show" role="alert">
+            <?php echo $alert['msg']; ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        </div>
+      <?php endif; ?>
+      
       <?php echo $this->renderSection('content');?>
     </div>
     <script src="<?=base_url()?>/js/popper.min.js"></script>
