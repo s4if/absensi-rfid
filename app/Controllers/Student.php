@@ -2,77 +2,142 @@
 
 namespace App\Controllers;
 
-use CodeIgniter\RESTful\ResourceController;
+use App\Controllers\BaseController;
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use Psr\Log\LoggerInterface;
+use CodeIgniter\API\ResponseTrait;
 
-class Student extends ResourceController
+class Student extends BaseController
 {
+    use ResponseTrait;
     /**
-     * Return an array of resource objects, themselves in array format
-     *
-     * @return mixed
+     * Constructor.
      */
+    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
+    {
+        // Do Not Edit This Line
+        parent::initController($request, $response, $logger);
+
+        $this->model = new \App\Models\Student();
+    }
+
     public function index()
     {
-        //
+        return view('student/index', [
+            'title'     => 'List Siswa',
+            'alert'     => $this->session->alert,
+        ]);
     }
 
-    /**
-     * Return the properties of a resource object
-     *
-     * @return mixed
-     */
-    public function show($id = null)
+    public function list()
     {
-        //
+        $students = $this->model->findAll();
+        foreach ($students as &$student) {
+            $student->action = "<a href='".base_url()."/admin/edit_siswa/".$student->id
+            ."' class='btn btn-warning btn-sm'><i class='bi-pencil-fill'></i></a>"
+            ."<button type='button' onclick='del(".$student->id.",".$student->nis
+            .")' class='btn btn-danger btn-sm'><i class='bi-x-octagon'></i></a>";
+        }
+        unset($student);// wajib
+        $data = ['data' => $students];
+        return $this->respond($data);
     }
 
-    /**
-     * Return a new resource object, with default properties
-     *
-     * @return mixed
-     */
-    public function new()
+    public function new() //get
     {
-        //
+        $student = new \stdClass();
+        $student->id = null;
+        $student->nis = null;
+        $student->name = null;
+        $student->gender = "L";
+        $student->classroom = "TKJ1";
+        $student->rfid = null;
+        return view('student/update', [
+            'title'     => 'Tambah Siswa',
+            'alert'     => $this->session->alert,
+            'student'   => $student,
+            'action'    => base_url().'/admin/tambah_siswa',
+        ]);
     }
 
-    /**
-     * Create a new resource object, from "posted" parameters
-     *
-     * @return mixed
-     */
-    public function create()
+    public function create() //post
     {
-        //
+        $data = $this->request->getPost();
+        $res = true;
+        try {
+            $res = $this->model->insert($data, false);
+        } catch (\ErrorException $e) {
+            $res = false;
+        }
+        if ($res) {
+            $this->session->setFlashdata('alert', ['type' => 'success', 'msg' => 'Data Berhasil Disimpan.']);
+            return redirect()->to('/admin/siswa');
+        } else {
+            $this->session->setFlashdata('alert', [
+                'type' => 'danger', 
+                'msg' => 'Penyimpanan Data Gagal!<br>Silahkan cek data lagi!'
+            ]);
+            return redirect()->to('/admin/siswa');
+        }
     }
 
-    /**
-     * Return the editable properties of a resource object
-     *
-     * @return mixed
-     */
-    public function edit($id = null)
+    public function edit($id) //get
     {
-        //
+        $student = $this->model->find($id);
+        if (is_null($student)) {
+            $this->session->setFlashdata('alert', [
+                'type' => 'danger', 
+                'msg' => 'Error: Data siswa dengan id:'.$id.' tidak ditemukan!'
+            ]);
+            return redirect()->to('admin/siswa');
+        }
+        return view('student/update', [
+            'title'     => 'Tambah Siswa',
+            'alert'     => $this->session->alert,
+            'student'   => $student,
+            'action'    => base_url().'/admin/edit_siswa/'.$id,
+        ]);
     }
 
-    /**
-     * Add or update a model resource, from "posted" properties
-     *
-     * @return mixed
-     */
-    public function update($id = null)
+    public function update($id) //post
     {
-        //
+        $data = $this->request->getPost();
+        $res = true;
+        try {
+            $res = $this->model->update($id,$data);
+        } catch (\ErrorException $e) {
+            $res = false;
+        }
+        if ($res) {
+            $this->session->setFlashdata('alert', ['type' => 'success', 'msg' => 'Data Berhasil Disimpan.']);
+            return redirect()->to('/admin/siswa');
+        } else {
+            $this->session->setFlashdata('alert', [
+                'type' => 'danger', 
+                'msg' => 'Penyimpanan Data Gagal!<br>Silahkan cek data lagi!'
+            ]);
+            return redirect()->to('/admin/siswa');
+        }
     }
 
-    /**
-     * Delete the designated resource object from the model
-     *
-     * @return mixed
-     */
-    public function delete($id = null)
+    public function delete($id)
     {
-        //
+        $res = true;
+        try {
+            $res = $this->model->delete($id);
+        } catch (\ErrorException $e) {
+            $res = false;
+        }
+        if ($res) {
+            $this->session->setFlashdata('alert', ['type' => 'warning', 'msg' => 'Data Berhasil Dihapus.']);
+            return redirect()->to('/admin/siswa');
+        } else {
+            $this->session->setFlashdata('alert', [
+                'type' => 'danger', 
+                'msg' => 'Data gagal dihapus!<br>Silahkan cek data lagi!'
+            ]);
+            return redirect()->to('/admin/siswa');
+        }
     }
 }

@@ -49,14 +49,15 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
 
     // management Siswa
     $routes->get('siswa', 'Student::index');
-    $routes->get('siswa/(:num)', 'Student::show');
-    $routes->get('siswa/tambah', 'Student::new');
-    $routes->post('siswa/tambah', 'Student::create');
-    $routes->get('siswa/edit/(:num)', 'Student::edit');
-    $routes->post('siswa/edit/(:num)', 'Student::update');
-    $routes->get('siswa/hapus/(:num)', 'Student::delete');
+    $routes->get('get_siswa', 'Student::list');
+    $routes->get('tambah_siswa', 'Student::new');
+    $routes->post('tambah_siswa', 'Student::create');
+    $routes->get('edit_siswa/(:num)', 'Student::edit/$1');
+    $routes->post('edit_siswa/(:num)', 'Student::update/$1');
+    $routes->get('hapus_siswa/(:num)', 'Student::delete/$1');
 });
 
+$routes->resource('siswa', ['controller' => 'Student']);
 /*
  * --------------------------------------------------------------------
  * Additional Routing

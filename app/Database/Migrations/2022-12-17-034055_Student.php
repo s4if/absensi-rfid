@@ -26,6 +26,11 @@ class Student extends Migration
                 'constraint'    => 60,
                 'null'          => false,
             ],
+            'rfid' => [
+                'type'          => 'VARCHAR',
+                'constraint'    => 60,
+                'null'          => true,
+            ],
             'gender' => [
                 'type'          => 'ENUM',
                 'constraint'    => ['L', 'P'],
