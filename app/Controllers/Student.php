@@ -37,7 +37,7 @@ class Student extends BaseController
             $student->action = "<a href='".base_url()."/admin/edit_siswa/".$student->id
             ."' class='btn btn-warning btn-sm'><i class='bi-pencil-fill'></i></a>"
             ."<button type='button' onclick='del(".$student->id.",".$student->nis
-            .")' class='btn btn-danger btn-sm'><i class='bi-x-octagon'></i></a>";
+            .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></a>";
         }
         unset($student);// wajib
         $data = ['data' => $students];
@@ -66,7 +66,14 @@ class Student extends BaseController
         $data = $this->request->getPost();
         $res = true;
         try {
-            $res = $this->model->insert($data, false);
+            // undelete kalau nis-nya sama
+            $student = $this->model->onlyDeleted()->where('nis', $data['nis'])->first();
+            if (is_null($student)) {
+                $res = $this->model->insert($data, false);
+            } else {
+                $data['deleted_at'] = null;
+                $res = $this->model->update($student->id,$data);
+            }
         } catch (\ErrorException $e) {
             $res = false;
         }

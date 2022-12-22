@@ -10,7 +10,7 @@
 </div>
 <div class="row mb-3">
 	<a href="<?= base_url()?>/admin/tambah_siswa" class="btn btn-success col-md-3">
-		<i class="bi-person-plus"></i>&nbsp;&nbsp;Tambah Siswa
+		<i class="bi-person-fill-add"></i>&nbsp;&nbsp;Tambah Siswa
 	</a>
 </div>
 <div class="row mb-3">

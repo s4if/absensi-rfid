@@ -57,7 +57,7 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->get('hapus_siswa/(:num)', 'Student::delete/$1');
 });
 
-$routes->resource('siswa', ['controller' => 'Student']);
+$routes->get('rfid/checkin/(:any)', 'Rfid::readRfid/$1');
 /*
  * --------------------------------------------------------------------
  * Additional Routing
