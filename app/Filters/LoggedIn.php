@@ -26,7 +26,7 @@ class LoggedIn implements FilterInterface
     public function before(RequestInterface $request, $arguments = null)
     {
         $session = \Config\Services::session();
-        if (!$session->has('isLoggedIn')) {
+        if (!$session->has('is_logged_in')) {
             $session->setFlashdata('alert', ['type' => 'warning', 'msg' => 'Maaf, Anda harus login dulu!']);
             return redirect()->to('/login');
         }

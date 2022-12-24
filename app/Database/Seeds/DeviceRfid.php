@@ -14,7 +14,8 @@ class DeviceRfid extends Seeder
             'token' => 'RAVEN'
         ];
         $this->db->table('devices')->insert($data);
-        // last_rfid
-        $this->db->table('last_rfid')->insert(['id' => 'DEFAULT']);
+        // tempat simpan sementara rfid, ada current dan last
+        $this->db->table('rfid_tmp')->insert(['id' => 'CURRENT']);
+        $this->db->table('rfid_tmp')->insert(['id' => 'OLDCURRENT']);
     }
 }

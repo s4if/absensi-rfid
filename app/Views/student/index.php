@@ -55,7 +55,7 @@
 <script type="text/javascript">
 function del(id,nis) {
 	let del_modal = new bootstrap.Modal('#del_modal', {
-		'keyboar':true,
+		'keyboard':true,
 	});
 	let del_btn = document.getElementById('del_btn');
 	del_btn.href = '<?=base_url();?>/admin/hapus_siswa/'+id;

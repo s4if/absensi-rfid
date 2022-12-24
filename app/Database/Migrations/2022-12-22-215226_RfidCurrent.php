@@ -31,11 +31,11 @@ class RfidCurrent extends Migration
             ],
         ]);
         $this->forge->addPrimaryKey('id');
-        $this->forge->createTable('last_rfid'); // RFID terakhir yang masuk
+        $this->forge->createTable('rfid_tmp'); // RFID terakhir yang masuk
     }
 
     public function down()
     {
-        $this->forge->dropTable('last_rfid');
+        $this->forge->dropTable('rfid_tmp');
     }
 }

@@ -30,6 +30,12 @@ class Student extends BaseController
         ]);
     }
 
+    public function show($id)
+    {
+        $student = $this->model->find($id);
+        return (is_null($student))?$this->failNotFound('data tidak ditemukan'):$this->respond($student);
+    }
+
     public function list()
     {
         $students = $this->model->findAll();

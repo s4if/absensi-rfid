@@ -16,14 +16,14 @@ class Login extends BaseController
 
     public function doLogin()
     {
-        $adminMdl = new \App\Models\Admin();
+        $admin_mdl = new \App\Models\Admin();
         $username = $this->request->getPost('username');
-        $adminObj = $adminMdl->where('username', $username)->first();
-        if (!is_null($adminObj)) {
-            if (password_verify($this->request->getPost('password'), $adminObj->password)) {
+        $admin_obj = $admin_mdl->where('username', $username)->first();
+        if (!is_null($admin_obj)) {
+            if (password_verify($this->request->getPost('password'), $admin_obj->password)) {
                 $this->session->set([
-                    'isLoggedIn'    => true,
-                    'userId'        => $adminObj->id,
+                    'is_logged_in'    => true,
+                    'user_id'        => $admin_obj->id,
                 ]);
                 return redirect()->to('/admin');
             } else {
