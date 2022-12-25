@@ -65,6 +65,7 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
 //api call
 $routes->get('rfid/check_in/(:any)', 'Rfid::readRfid/$1');
 $routes->get('rfid/get_current', 'Rfid::getCurrent');
+$routes->get('rfid/session', 'Rfid::getSession');
 /*
  * --------------------------------------------------------------------
  * Additional Routing

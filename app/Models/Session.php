@@ -4,21 +4,21 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class Student extends Model
+class Session extends Model
 {
     protected $DBGroup          = 'default';
-    protected $table            = 'students';
+    protected $table            = 'sessions';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $insertID         = 0;
-    protected $returnType       = "object";
+    protected $returnType       = 'array';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['nis', 'name', 'gender', 'classroom', 'rfid', 'deleted_at', 'updated_at'];
+    protected $allowedFields    = ['name', 'session_date', 'mode', 'criterion_time', 'updated_at', 'deleted_at'];
 
     // Dates
     protected $useTimestamps = true;
-    protected $dateFormat    = 'int';
+    protected $dateFormat    = 'int'; //timestamp
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';

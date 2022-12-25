@@ -121,4 +121,16 @@ class Rfid extends BaseController
         unset($student);// wajib
         return $this->respond(['data' => $students]);
     }
+
+    public function getSession()
+    {
+        $current_timestamp = time();
+        $upper_limit = $current_timestamp + 7200;
+        $lower_limit = $current_timestamp - 7200;
+        $sql = "select * from sessions where criterion_time >= ? and criterion_time <= ?"
+            ." and deleted_at is null order by criterion_time asc";
+        $query = $this->db->query($sql, [$lower_limit, $upper_limit]);
+        $sess = $query->getRow();
+        return $sess->name;
+    }
 }
