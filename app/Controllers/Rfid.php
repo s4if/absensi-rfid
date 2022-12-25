@@ -15,14 +15,19 @@ class Rfid extends BaseController
 
     public function getCurrent()
     {
-        $query = $this->db->query("select rfid_tmp.rfid as 'rfid', devices.name as 'device',"
-            ." rfid_tmp.updated_at as 'timestamp' from rfid_tmp inner join devices"
-            ." on devices.id=rfid_tmp.device_id where rfid_tmp.id='CURRENT';");
-        // TODO: dijadikan select rfid_tmp.rifd as rfid, devices.name as name, dll
-        $current = $query->getRow();
-        $log_date = ( new \DateTimeImmutable())->setTimestamp($current->timestamp);
-        $current->time = $log_date->format('l, d M Y H:i:s');
-        return $this->respond($current);
+        try {
+            $query = $this->db->query("select rfid_tmp.rfid as 'rfid', devices.name as 'device',"
+                ." rfid_tmp.updated_at as 'timestamp' from rfid_tmp inner join devices"
+                ." on devices.id=rfid_tmp.device_id where rfid_tmp.id='CURRENT';");
+            // TODO: dijadikan select rfid_tmp.rifd as rfid, devices.name as name, dll
+            $current = $query->getRow();
+            $log_date = ( new \DateTimeImmutable())->setTimestamp($current->timestamp);
+            $current->time = $log_date->format('l, d M Y H:i:s');
+            return $this->respond($current);
+        } catch (\ErrorException $e) {
+            return $this->failNotFound('rfid belum ada yang masuk');
+        }
+            
     }
 
     public function readRfid($device_id)
@@ -63,23 +68,29 @@ class Rfid extends BaseController
             $builder->update($data, ['id' => 'CURRENT']);
             $data['mode'] = 'save_rfid';
             return true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            return false;
+        } catch (\ErrorException $e) {
             return false;
         }
     }
 
-    public function setStudentRfid()
+    public function setStudentRfid($mode = 'edit')
     {
         $nis = $this->request->getVar('nis');
-        $rfid = $this->request->getVar('rfid');
+        $rfid = null;
+        if ($mode == 'edit') {
+            $rfid = $this->request->getVar('rfid');
+        }
         $builder = $this->db->table('students');
         try {
             $builder->update(['rfid' => $rfid], ['nis' => $nis]);
             return $this->respondCreated(['rfid' => $rfid]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return $this->fail('unknown failure', 400);
+        } catch (\ErrorException $e) {
+            return false;
         }
-
     }
 
     private function saveAttendance(&$data)

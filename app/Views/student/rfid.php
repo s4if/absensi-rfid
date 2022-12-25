@@ -94,45 +94,48 @@ $(document).ready(function () {
     });
 
     let sync_btn = document.getElementById('sync_rfid_btn');
-    sync_btn.onclick = () => {
-    	fetch('<?=base_url();?>/rfid/get_current/')
-		.then((response) => response.json())
-	  	.then(data => {
-	    	b_rfid.innerHTML = data.rfid;
-	    	b_device.innerHTML = data.device;
-	    	b_time.innerHTML = data.time;
-	    	set_btn.innerHTML = "Simpan RFID";
-	    	set_btn.classList.add('btn-success');
-	    	set_btn.classList.remove('btn-danger');
-	    	// todo, set btn danger menjadi btn-primary
-	  	})
-	  	.catch(console.error);
+    sync_btn.onclick = async () => {
+	    let response = await fetch('<?=base_url();?>/rfid/get_current/');
+		if (response.ok) {
+			let data = await response.json();
+			b_rfid.innerHTML = data.rfid;
+			b_device.innerHTML = data.device;
+			b_time.innerHTML = data.time;
+			set_btn.innerHTML = "Simpan RFID";
+			set_btn.classList.add('btn-success');
+			set_btn.classList.remove('btn-danger');
+		}
     };
 
     let set_btn = document.getElementById('set_btn');
-    set_btn.onclick = () => {
+    set_btn.onclick = async () => {
     	let data = {
-    		'nis': document.getElementById('b_nis').innerHTML,
-    		'rfid': document.getElementById('b_rfid').innerHTML,
+    		'nis': b_nis.innerHTML,
+    		'rfid': b_rfid.innerHTML,
     	};
 
-		fetch('<?=base_url();?>/admin/set_rfid', {
+    	let put_url;
+    	if (set_btn.innerHTML == "Simpan RFID") {
+    		put_url = '<?=base_url();?>/admin/set_rfid';
+    	} else {
+    		put_url = '<?=base_url();?>/admin/set_rfid/hapus';
+    	}
+
+		let response = await fetch(put_url, {
 			method: 'PUT', // or 'POST'
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify(data),
-		})
-		.then((response) => response.json())
-		.then((data) => {
-			console.log('Success:', data);
-			// TODO: JS Alert?
+		});
+		if (response.ok) {
+			alert("Data Berhasil Disimpan!")
 			table.ajax.reload();
 			set_modal.toggle();
-		})
-		.catch((error) => {
-			console.error('Error:', error);
-		});
+		} else {
+			alert("Data Gagal Disimpan!\nMungkin terjadi duplikasi?\nMohon RFID Terakhir di Cek Kembali!");
+			set_modal.toggle();
+		}
     };
 });
 </script>

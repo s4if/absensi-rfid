@@ -59,6 +59,7 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->get('rfid', 'Rfid::showStudents');
     $routes->get('get_rfid', 'Rfid::getStudents');
     $routes->put('set_rfid', 'Rfid::setStudentRfid');
+    $routes->put('set_rfid/(:any)', 'Rfid::setStudentRfid/$1');
 });
 
 //api call

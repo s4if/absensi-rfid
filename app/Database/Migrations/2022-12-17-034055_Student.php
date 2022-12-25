@@ -30,6 +30,7 @@ class Student extends Migration
                 'type'          => 'VARCHAR',
                 'constraint'    => 60,
                 'null'          => true,
+                'unique'        => true,
             ],
             'gender' => [
                 'type'          => 'ENUM',
