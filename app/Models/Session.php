@@ -11,10 +11,10 @@ class Session extends Model
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
     protected $insertID         = 0;
-    protected $returnType       = 'array';
+    protected $returnType       = 'object';
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['name', 'session_date', 'mode', 'criterion_time', 'updated_at', 'deleted_at'];
+    protected $allowedFields    = ['name', 'mode', 'criterion_time', 'updated_at', 'deleted_at'];
 
     // Dates
     protected $useTimestamps = true;

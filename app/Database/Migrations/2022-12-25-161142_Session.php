@@ -20,16 +20,14 @@ class Session extends Migration
                 'type'          => 'VARCHAR',
                 'constraint'    => 60,
                 'null'          => false,
-            ],
-            'session_date' => [
-                'type'          => 'DATE',
-                'null'          => false
+                'unique'        => true,
             ],
             'mode' => [
                 'type'          => 'ENUM',
                 'constraint'    => ['check-in', 'check-out'], // kedatangan dan kepulangan
                 'null'          => false,
             ],
+            // criterion_time sudah termasuk tanggal!
             'criterion_time' => [ // patokan waktu, misal, sesi kedatangan: jam 8.00 kepulangan jam 16.30
                 'type'          => 'TIMESTAMP',
                 'null'          => false,

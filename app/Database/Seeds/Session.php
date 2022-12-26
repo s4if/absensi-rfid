@@ -11,7 +11,7 @@ class Session extends Seeder
         $datetime = new \DateTime('now');
         $data = [
             'name'              => 'Sesi Coba',
-            'session_date'      => $datetime->format('Y-m-d'),
+            //'session_date'      => $datetime->format('Y-m-d'),
             'mode'              => 'check-in',
             'criterion_time'    => $datetime->getTimestamp()+7190
         ];

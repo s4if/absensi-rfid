@@ -39,7 +39,7 @@ class Student extends Migration
             ],
             'classroom' => [ // nama kelas (biar gak konflik dengan class)
                 'type'          => 'ENUM',
-                'constraint'    => ['TKJ1', 'TKJ2'],
+                'constraint'    => ['TKJ1', 'TKJ2','GURU'], // karena guru juga ikut absen, lol
                 'null'          => false,
             ],
             'created_at' => [

@@ -63,10 +63,10 @@ const b_classroom = document.getElementById('b_classroom');
 const b_rfid = document.getElementById('b_rfid');
 const b_device = document.getElementById('b_device');
 const b_time = document.getElementById('b_time');
-function set_rfid(id) {
-	fetch('<?=base_url();?>/admin/get_siswa/'+id)
-	.then((response) => response.json())
-  	.then(data => {
+async function set_rfid(id) {
+	let response = await fetch('<?=base_url();?>/admin/get_siswa/'+id);
+	if (response.ok) {
+		data = await response.json();
     	b_nis.innerHTML = data.nis;
     	b_nama.innerHTML = data.name;
     	b_classroom.innerHTML = data.classroom;
@@ -76,10 +76,10 @@ function set_rfid(id) {
     	set_btn.innerHTML = "Hapus RFID"
     	set_btn.classList.add('btn-danger');
     	set_btn.classList.remove('btn-success');
-  	})
-  	.catch(console.error);
-
-	set_modal.toggle();
+		set_modal.toggle();
+  	} else {
+  		alert('unkown error')
+  	}
 }
 
 $(document).ready(function () {
@@ -104,6 +104,8 @@ $(document).ready(function () {
 			set_btn.innerHTML = "Simpan RFID";
 			set_btn.classList.add('btn-success');
 			set_btn.classList.remove('btn-danger');
+		} else {
+			alert('belum ada data rfid yang masuk');
 		}
     };
 
@@ -115,21 +117,27 @@ $(document).ready(function () {
     	};
 
     	let put_url;
+    	let method;
+    	let notice;
     	if (set_btn.innerHTML == "Simpan RFID") {
     		put_url = '<?=base_url();?>/admin/set_rfid';
+    		method = 'PUT';
+    		notice = 'Data Berhasil Disimpan';
     	} else {
-    		put_url = '<?=base_url();?>/admin/set_rfid/hapus';
+    		put_url = '<?=base_url();?>/admin/set_rfid';
+    		method = 'DELETE';
+    		notice = 'Data Berhasil Dihapus';
     	}
 
 		let response = await fetch(put_url, {
-			method: 'PUT', // or 'POST'
+			method: method,
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify(data),
 		});
 		if (response.ok) {
-			alert("Data Berhasil Disimpan!")
+			alert(notice)
 			table.ajax.reload();
 			set_modal.toggle();
 		} else {

@@ -56,16 +56,26 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->get('edit_siswa/(:num)', 'Student::edit/$1');
     $routes->post('edit_siswa/(:num)', 'Student::update/$1');
     $routes->get('hapus_siswa/(:num)', 'Student::delete/$1');
+
+    // management rfid
     $routes->get('rfid', 'Rfid::showStudents');
     $routes->get('get_rfid', 'Rfid::getStudents');
     $routes->put('set_rfid', 'Rfid::setStudentRfid');
-    $routes->put('set_rfid/(:any)', 'Rfid::setStudentRfid/$1');
+    $routes->delete('set_rfid', 'Rfid::setStudentRfid/hapus');
+
+     // management Sesi
+    $routes->get('sesi', 'Session::index');
+    $routes->get('get_sesi', 'Session::list');
+    $routes->get('get_sesi/(:num)', 'Session::show/$1');
+    $routes->post('tambah_sesi', 'Session::create');
+    $routes->put('edit_sesi/(:num)', 'Session::update/$1');
+    $routes->delete('hapus_sesi/(:num)', 'Session::delete/$1');
 });
 
 //api call
 $routes->get('rfid/check_in/(:any)', 'Rfid::readRfid/$1');
 $routes->get('rfid/get_current', 'Rfid::getCurrent');
-$routes->get('rfid/session', 'Rfid::getSession');
+//$routes->get('rfid/session', 'Rfid::getSession');
 /*
  * --------------------------------------------------------------------
  * Additional Routing
