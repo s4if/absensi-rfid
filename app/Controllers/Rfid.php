@@ -32,47 +32,73 @@ class Rfid extends BaseController
 
     public function readRfid($device_id)
     {
+        // karena perangkatnya sederhana, api-nya yang harus menebak!
         $token = $this->request->getGet('token');
         $rfid = $this->request->getGet('rfid');
         $device_builder = $this->db->table('devices');
         $device_builder->where('id', $device_id);
-        $query = $device_builder->get();
-        $device = $query->getRow();
+        $dquery = $device_builder->get();
+        $device = $dquery->getRow();
 
         if (is_null($device)) {
             return $this->failUnauthorized('device unknown');
         }
         if ($device->token != $token) {
-            return $this->failValidationError('token invalid');
+            return $this->failUnauthorized('token invalid');
+        }
+        if (is_null($rfid)) {
+            return $this->failValidationError('rfid is null');
         }
 
-        $data = [
+        // save rfid
+        $rfid_data = [
             'rfid'          => $rfid,
             'updated_at'    => (new \DateTime('now'))->getTimestamp(),
             'device_id'     => $device_id
         ];
-        $res = true;
-        $mode = 'save'; // save or listen
-        if ($mode == 'save') {
-            $res = $this->saveRfid($data);
-        } else {
-            $res = $this->saveAttendance($data);
-        }
-        return ($res)?$this->respondCreated($data):$this->fail('unknow error', 400);
-    }
+        $rfid_builder = $this->db->table('rfid_tmp');
+        $rfid_builder->update($rfid_data, ['id' => 'CURRENT']); // Current jangan diubah
 
-    private function saveRfid(&$data)
-    {
-        try {
-            $builder = $this->db->table('rfid_tmp');
-            $builder->update($data, ['id' => 'CURRENT']);
-            $data['mode'] = 'save_rfid';
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        } catch (\ErrorException $e) {
-            return false;
+        // check student
+        $student_builder = $this->db->table('students');
+        $student_builder->select('id, nis'); // nis untuk dimasukkan ke log
+        $student_builder->where('rfid', $rfid);
+        $squery = $student_builder->get();
+        $student = $squery->getRow();
+        if (is_null($student)) {
+            return $this->respondCreated(['msg' => 'rfid saved, not associated with any student']);
         }
+
+        // check session
+        $sess = $this->getSession();
+        if (is_null($sess)) {
+            return $this->respondCreated(['msg' => 'rfid saved, no session detected']);
+        }
+
+        // check prev attendance
+        $sql = "select * from att_records where session_id=? and student_id=?;";
+        $query = $this->db->query($sql, [$sess->id, $student->id]);
+        $existing_record = $query->getRow();
+        if (!is_null($existing_record)) {
+            return $this->respondCreated(['msg' => 'rfid saved, already used in this session']);
+        }
+        $time = (new \DateTime('now'));
+        $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+        $record_data = [
+            'student_id'    => $student->id,
+            'device_id'     => $device_id,
+            'session_id'    => $sess->id,
+            'logged_at'     => $time->getTimestamp(),
+        ];
+        $att_builder = $this->db->table('att_records');
+        try {
+            $att_builder->insert($record_data);
+            return $this->respondCreated(['msg' => 'attendance saved']);
+        } catch (\ErrorException $e) {
+            return $this->fail('unknown error',400);
+        }
+
+        // TODO: append to log (not urgent)
     }
 
     public function setStudentRfid($mode = 'edit')
@@ -91,11 +117,6 @@ class Rfid extends BaseController
         } catch (\ErrorException $e) {
             return false;
         }
-    }
-
-    private function saveAttendance(&$data)
-    {
-        return true;
     }
 
     public function showStudents()

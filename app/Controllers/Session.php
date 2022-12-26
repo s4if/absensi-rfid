@@ -55,10 +55,12 @@ class Session extends BaseController
             $sess->date = $time->format('Y-m-d');
             $sess->time = $time->format('H:i:s');
             $sess->counter = $count++;
-            $sess->action = "<button type='button' onclick='edit(".$sess->id
-            .")' class='btn btn-warning btn-sm'><i class='bi-pencil-fill'></i></a>"
+            $sess->action = "<a type='button' href='".base_url()."/admin/presensi/".$sess->id
+            ."' class='btn btn-primary btn-sm'><i class='bi-list-check'></i></a>"
+            ."<button type='button' onclick='edit(".$sess->id
+            .")' class='btn btn-warning btn-sm'><i class='bi-pencil-fill'></i></button>"
             ."<button type='button' onclick='del(".$sess->id
-            .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></a>";
+            .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></button>";
         }
         unset($sess);// wajib
         $data = ['data' => $sessions];
@@ -111,6 +113,67 @@ class Session extends BaseController
             return $this->respondDeleted([]);
         } catch (\ErrorException $e) {
             return $this->failNotFound('resource tidak ditemukan');
+        }
+    }
+
+    // presensi
+    public function showAttendance($id)
+    {
+        return view('session/attendance', [
+            'title'     => 'Daftar Hadir',
+            'alert'     => $this->session->alert,
+            'sess_id'   => $id,
+        ]);
+    }
+
+    public function getAttendaces($id)
+    {
+        $sess = $this->model->find($id);
+        if (is_null($sess)) {
+            return $this->failNotFound('data tidak ditemukan');
+        }
+        $sql = "select students.nis as nis, students.name as name, students.classroom as classroom,"
+            ." att_records.logged_at as timestamp, att_records.id as id from att_records inner join"
+            ." students on att_records.student_id=students.id where att_records.session_id=?"
+            ." order by att_records.logged_at asc;";
+        $aquery = $this->db->query($sql, [$sess->id]);
+        $data = $aquery->getResultObject();
+        foreach ($data as &$item) {
+            $time = (new \DateTime());
+            $time->setTimestamp($item->timestamp);
+            $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+            $item->time = $time->format('Y-m-d H:i:s');
+            $item->action = "<button type='button' onclick='del(".$item->id
+            .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></button>";
+        }
+        return $this->respond(['data' => $data]);
+    }
+
+    public function getAttRecord($id){
+        $sql = "select students.nis as nis, students.name as name, students.classroom as classroom,"
+            ." att_records.logged_at as timestamp, att_records.id as id from att_records inner join"
+            ." students on att_records.student_id=students.id where att_records.id=?"
+            ." order by att_records.logged_at asc;";
+        $query = $this->db->query($sql,[$id]);
+        $record = $query->getRow();
+        $time = (new \DateTime());
+        $time->setTimestamp($record->timestamp);
+        $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+        $record->time = $time->format('Y-m-d H:i:s');
+        if (is_null($record)) {
+            return $this->failNotFound('record not found');
+        }
+        return $this->respond($record);
+    }
+
+    public function deleteAttRecord($id)
+    {
+        $sql = "delete from att_records where id=?;";
+        try {
+            $res = $this->db->query($sql,[$id]);
+            return ($res)?$this->respondDeleted(['id' => $id]):$this->failNotFound('item tidak ditemukan');
+        } catch (\ErrorException $e) {
+            return $this->fail('unknown error', 400);
         }
     }
 }

@@ -16,6 +16,5 @@ class DeviceRfid extends Seeder
         $this->db->table('devices')->insert($data);
         // tempat simpan sementara rfid, ada current dan last
         $this->db->table('rfid_tmp')->insert(['id' => 'CURRENT']);
-        $this->db->table('rfid_tmp')->insert(['id' => 'OLDCURRENT']);
     }
 }

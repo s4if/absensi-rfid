@@ -70,6 +70,10 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->post('tambah_sesi', 'Session::create');
     $routes->put('edit_sesi/(:num)', 'Session::update/$1');
     $routes->delete('hapus_sesi/(:num)', 'Session::delete/$1');
+    $routes->get('presensi/(:num)', 'Session::showAttendance/$1');
+    $routes->get('get_presensi/(:num)', 'Session::getAttendaces/$1');
+    $routes->get('get_item_presensi/(:num)', 'Session::getAttRecord/$1');
+    $routes->delete('hapus_item_presensi/(:num)', 'Session::deleteAttRecord/$1');
 });
 
 //api call
