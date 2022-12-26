@@ -61,7 +61,15 @@
 		  	</div>
 		  	<div class="modal-body">
 		  		<form>
-		  			<!-- -->
+		  			<div class="mb-3">
+						<label class="form-label">Siswa</label>
+						<select class="form-select" id="edit_student" name="student">
+						</select>						
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Waktu</label>
+						<input type="time" id="edit_time" name="time" class="form-control">
+					</div>
 				</form>
 			</div>
 			<div class="modal-footer">
@@ -93,11 +101,8 @@ let del_time = document.getElementById('del_time');
 let edit_modal = new bootstrap.Modal('#edit_modal', {
 	'keyboard':true,
 });
-let em_title = document.getElementById('em_title');
-let edit_name = document.getElementById('edit_name');
-let edit_date = document.getElementById('edit_date');
 let edit_time = document.getElementById('edit_time');
-let edit_mode = document.getElementById('edit_mode');
+let edit_student = document.getElementById('edit_student');
 let edit_submit = document.getElementById('edit_submit');
 
 async function del(id) {
@@ -137,10 +142,22 @@ $(document).ready(function () {
         ],
     });
     document.getElementById('add_btn').onclick = async () => {
-    	// element here
+    	edit_student.innerHTML = "";
+    	let response = await fetch('<?=base_url();?>/admin/get_siswa_belum_presensi/<?=$sess_id;?>');
+    	if (response.ok) {
+    		let data = await response.json();
+    		data.forEach((item) => {
+    			console.log(item);
+    			let opt = document.createElement('option');
+    			opt.value = item.id;
+    			opt.innerHTML = item.name+' ('+item.classroom+')';
+    			edit_student.append(opt);
+    		});
+    	}
     	edit_submit.onclick = async () => {
 	    	let data = {
-	    		'place': 'holder'
+	    		'student_id': edit_student.value,
+	    		'time': edit_time.value
 	    	};
 	    	console.log(data);
 	    	let response = await fetch('<?=base_url();?>/admin/presensi_manual/<?=$sess_id;?>', {

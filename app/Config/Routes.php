@@ -74,6 +74,8 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->get('get_presensi/(:num)', 'Session::getAttendaces/$1');
     $routes->get('get_item_presensi/(:num)', 'Session::getAttRecord/$1');
     $routes->delete('hapus_item_presensi/(:num)', 'Session::deleteAttRecord/$1');
+    $routes->get('get_siswa_belum_presensi/(:num)', 'Session::getStudentsOption/$1');
+    $routes->post('presensi_manual/(:num)', 'Session::manualRecord/$1');
 });
 
 //api call

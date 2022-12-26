@@ -176,4 +176,43 @@ class Session extends BaseController
             return $this->fail('unknown error', 400);
         }
     }
+
+    public function getStudentsOption($id){
+        $sql1 = "select student_id as id from att_records where session_id=?;";
+        $q1 = $this->db->query($sql1, [$id]);
+        $res1 = $q1->getResultObject();
+        $exclusion_list = [];
+        foreach ($res1 as $ex_id) {
+            $exclusion_list[] = $ex_id->id;
+        }
+        $sql2 = "select * from students;";
+        $q2 = $this->db->query($sql2);
+        $res2 = $q2->getResultObject();
+        $data = [];
+        foreach ($res2 as $item) {
+            if (!in_array($item->id, $exclusion_list)) {
+                $data[] = $item;
+            }
+        }
+        return $this->respond($data);
+    }
+
+    public function manualRecord($id)
+    {
+        $sess = $this->model->find($id);
+        if (is_null($sess)) {
+            return $this->failNotFound('data tidak ditemukan');
+        }
+        $data = $this->request->getVar();
+        $time = (new \DateTime());
+        $time->setTimestamp($sess->criterion_time);
+        $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+        $date = $time->format('Y-m-d');
+        $new_time = \DateTime::createFromFormat('Y-m-d H:i', $date." ".$data->time, 
+            (new \DateTimeZone('Asia/Jakarta'))); // TODO: default timezone biar lebih enak, gimana ya?
+        $sql = "insert into att_records(session_id, student_id, logged_at, 'device_id')"
+            ." values(?, ?, ?, 'MANUAL');";
+        $res = $this->db->query($sql, [$sess->id, $data->student_id, $new_time->getTimestamp()]);
+        return ($res)?$this->respondCreated([]):$this->fail('unknown error', 4000);
+    }
 }
