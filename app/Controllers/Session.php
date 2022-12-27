@@ -143,6 +143,7 @@ class Session extends BaseController
             $item->time = $time->format('Y-m-d H:i:s');
             $item->action = "<button type='button' onclick='del(".$item->id
             .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></button>";
+            $item->comment = "";
         }
         return $this->respond(['data' => $data]);
     }

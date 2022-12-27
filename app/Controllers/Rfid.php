@@ -131,4 +131,20 @@ class Rfid extends BaseController
         $query = $this->db->query($sql, [$lower_limit, $upper_limit]);
         return $query->getRow();
     }
+
+    public function showAttendance(){
+        $sess = $this->getSession();
+        if (is_null($sess)) {
+            return view('session/att_notice', [
+                'title'     => 'Sesi Tidak Ada',
+                'alert'     => $this->session->alert,
+            ]);
+        } else {
+            return view('session/att_show', [
+                'title'     => 'Daftar Hadir',
+                'alert'     => $this->session->alert,
+                'sess_id'   => $sess->id,
+            ]);
+        }
+    }
 }
