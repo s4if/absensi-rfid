@@ -120,30 +120,6 @@ class Rfid extends BaseController
         }
     }
 
-    public function showStudents()
-    {
-        return view('student/rfid', [
-            'title'     => 'List RFID Siswa',
-            'alert'     => $this->session->alert,
-        ]);
-        // todo: copy view-nya...
-    }
-
-    public function getStudents()
-    {
-        $student_builder = $this->db->table('students');
-        $student_builder->select('id, name, nis, rfid');
-        $student_builder->where('deleted_at', null);
-        $query = $student_builder->get();
-        $students = $query->getResult();
-        foreach ($students as &$student) {
-            $student->action = "<button type='button' onclick='set_rfid(".$student->id
-            .")' class='btn btn-primary btn-sm'><i class='bi-person-fill-gear'></i></button>";
-        }
-        unset($student);// wajib
-        return $this->respond(['data' => $students]);
-    }
-
     private function getSession()
     {
         $range = 7200; // dibuat di setting env?

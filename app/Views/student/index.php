@@ -125,20 +125,20 @@
 	<div class="modal-dialog">
 		<div class="modal-content">
 		  	<div class="modal-header">
-			    <h1 class="modal-title fs-5">Modal title</h1>
+			    <h1 class="modal-title fs-5">Import Data</h1>
 			    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		  	</div>
 		  	<div class="modal-body">
 		  		<form>
 					<div class="mb-3">
-						<label class="form-label">NIS : </label>
-						<input type="number" id="edit_nis" name="nis" class="form-control">
+						<label class="form-label">Template : </label>
+						<input type="file" id="upload_file" required name="file" accept=".xls" class="form-control">
 			        </div>
 				</form>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-				<button type="button" id="edit_submit" class="btn btn-success">Simpan</button>
+				<button type="button" id="upload_submit" class="btn btn-success">Upload</button>
 			</div>
 		</div>
 	</div>
@@ -172,6 +172,10 @@ let edit_gender = document.getElementById('edit_gender');
 let edit_classroom = document.getElementById('edit_classroom');
 let edit_submit = document.getElementById('edit_submit');
 
+// upload template
+let upload_modal = new bootstrap.Modal('#upload_modal', {
+	'keyboard':true,
+});
 
 async function set_rfid(id) {
 	let response = await fetch('<?=base_url();?>/admin/get_siswa/'+id);
@@ -295,8 +299,26 @@ $(document).ready(function () {
 
     let import_btn = document.getElementById('import_btn');
     import_btn.onclick = async () => {
-    	// do something here
+		upload_modal.toggle();
     }
+    let upload_submit = document.getElementById('upload_submit');
+    upload_submit.onclick = async () => {
+    	let fd = new FormData();
+    	let upload_file = document.getElementById('upload_file');
+    	let current_file = upload_file.files[0];
+		fd.append('template', current_file);
+		let response = await fetch('<?=base_url()?>/admin/import_siswa', {
+			method: "POST", 
+			body: fd,
+		});
+		if (response.ok) {
+			alert('upload berhasil');
+			upload_modal.toggle();
+			tbl_siswa.ajax.reload();
+		} else {
+			alert('unkown error');
+		}
+    };
 
     let sync_btn = document.getElementById('sync_rfid_btn');
     sync_btn.onclick = async () => {

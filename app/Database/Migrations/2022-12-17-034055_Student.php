@@ -17,8 +17,8 @@ class Student extends Migration
                 'auto_increment' => true,
             ],
             'nis' => [
-                'type'          => 'VARCHAR',
-                'constraint'    => 24,
+                'type'          => 'INT',
+                'unsigned'      => true,
                 'unique'        => true,
             ],
             'name' => [

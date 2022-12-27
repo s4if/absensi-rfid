@@ -58,8 +58,6 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->get('hapus_siswa/(:num)', 'Student::delete/$1');
 
     // management rfid
-    $routes->get('rfid', 'Rfid::showStudents');
-    $routes->get('get_rfid', 'Rfid::getStudents');
     $routes->put('set_rfid', 'Rfid::setStudentRfid');
     $routes->delete('set_rfid', 'Rfid::setStudentRfid/hapus');
 
@@ -76,6 +74,9 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->delete('hapus_item_presensi/(:num)', 'Session::deleteAttRecord/$1');
     $routes->get('get_siswa_belum_presensi/(:num)', 'Session::getStudentsOption/$1');
     $routes->post('presensi_manual/(:num)', 'Session::manualRecord/$1');
+
+    // import export
+    $routes->post('import_siswa', 'Excel::importSiswa');
 });
 
 //api call
