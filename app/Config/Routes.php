@@ -54,7 +54,7 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->get('tambah_siswa', 'Student::new');
     $routes->post('tambah_siswa', 'Student::create');
     $routes->get('edit_siswa/(:num)', 'Student::edit/$1');
-    $routes->post('edit_siswa/(:num)', 'Student::update/$1');
+    $routes->put('edit_siswa/(:num)', 'Student::update/$1');
     $routes->get('hapus_siswa/(:num)', 'Student::delete/$1');
 
     // management rfid

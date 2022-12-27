@@ -40,10 +40,12 @@ class Student extends BaseController
     {
         $students = $this->model->findAll();
         foreach ($students as &$student) {
-            $student->action = "<a href='".base_url()."/admin/edit_siswa/".$student->id
-            ."' class='btn btn-warning btn-sm'><i class='bi-pencil-fill'></i></a>"
-            ."<button type='button' onclick='del(".$student->id.",".$student->nis
-            .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></a>";
+            $student->action = "<button type='button' onclick='set_rfid(".$student->id
+            .")' class='btn btn-primary btn-sm'><i class='bi-person-vcard-fill'></i></button>"
+            ."<button type='button' onclick='edit(".$student->id
+            .")' class='btn btn-warning btn-sm'><i class='bi-pencil-fill'></i></button>"
+            ."<button type='button' onclick='del(".$student->id
+            .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></button>";
         }
         unset($student);// wajib
         $data = ['data' => $students];
@@ -69,30 +71,20 @@ class Student extends BaseController
 
     public function create() //post
     {
-        $data = $this->request->getPost();
-        $res = true;
-        try {
+        $data = $this->request->getVar();
+        //try {
             // undelete kalau nis-nya sama
-            $student = $this->model->onlyDeleted()->where('nis', $data['nis'])->first();
+            $student = $this->model->onlyDeleted()->where('nis', $data->nis)->first();
             if (is_null($student)) {
-                $res = $this->model->insert($data, false);
+                $this->model->insert($data, false);
             } else {
-                $data['deleted_at'] = null;
-                $res = $this->model->update($student->id,$data);
+                $data->deleted_at = null;
+                $this->model->update($student->id,$data);
             }
-        } catch (\ErrorException $e) {
-            $res = false;
-        }
-        if ($res) {
-            $this->session->setFlashdata('alert', ['type' => 'success', 'msg' => 'Data Berhasil Disimpan.']);
-            return redirect()->to('/admin/siswa');
-        } else {
-            $this->session->setFlashdata('alert', [
-                'type' => 'danger', 
-                'msg' => 'Penyimpanan Data Gagal!<br>Silahkan cek data lagi!'
-            ]);
-            return redirect()->to('/admin/siswa');
-        }
+            return $this->respondCreated(['msg' => 'data ditambahkan']);
+        //} catch (\ErrorException $e) {
+        //    return $this->fail('general error', 400);
+        //}
     }
 
     public function edit($id) //get
@@ -115,22 +107,13 @@ class Student extends BaseController
 
     public function update($id) //post
     {
-        $data = $this->request->getPost();
+        $data = $this->request->getVar();
         $res = true;
         try {
-            $res = $this->model->update($id,$data);
+            $this->model->update($id,$data);
+            return $this->respondCreated(['msg' => 'data edited']);
         } catch (\ErrorException $e) {
-            $res = false;
-        }
-        if ($res) {
-            $this->session->setFlashdata('alert', ['type' => 'success', 'msg' => 'Data Berhasil Disimpan.']);
-            return redirect()->to('/admin/siswa');
-        } else {
-            $this->session->setFlashdata('alert', [
-                'type' => 'danger', 
-                'msg' => 'Penyimpanan Data Gagal!<br>Silahkan cek data lagi!'
-            ]);
-            return redirect()->to('/admin/siswa');
+            return $this->fail('unknown error',400); // di spesifikkan lagi?
         }
     }
 

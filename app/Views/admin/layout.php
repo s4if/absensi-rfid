@@ -46,9 +46,6 @@
                 <a href="<?=base_url()?>/admin/siswa" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline bi bi-people">&nbsp;&nbsp;Siswa</span>
                 </a>
-                <a href="<?=base_url()?>/admin/rfid" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                    <span class="fs-5 d-none d-sm-inline bi bi-person-vcard">&nbsp;&nbsp;Rfid</span>
-                </a>
                 <a href="<?=base_url()?>/admin/sesi" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline bi bi-database-gear">&nbsp;&nbsp;Atur Sesi</span>
                 </a>
