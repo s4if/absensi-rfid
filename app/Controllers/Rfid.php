@@ -19,10 +19,10 @@ class Rfid extends BaseController
             $query = $this->db->query("select rfid_tmp.rfid as 'rfid', devices.name as 'device',"
                 ." rfid_tmp.updated_at as 'timestamp' from rfid_tmp inner join devices"
                 ." on devices.id=rfid_tmp.device_id where rfid_tmp.id='CURRENT';");
-            // TODO: dijadikan select rfid_tmp.rifd as rfid, devices.name as name, dll
             $current = $query->getRow();
-            $log_date = ( new \DateTimeImmutable())->setTimestamp($current->timestamp);
-            $current->time = $log_date->format('l, d M Y H:i:s');
+            $log_date = \DateTimeImmutable::createFromFormat('U', $current->timestamp);
+            $log_date = $log_date->setTimezone($this->tz);
+            $current->time = $log_date->format('l, d M Y H:i:s [e]');
             return $this->respond($current);
         } catch (\ErrorException $e) {
             return $this->failNotFound('rfid belum ada yang masuk');
@@ -51,9 +51,10 @@ class Rfid extends BaseController
         }
 
         // save rfid
+        $now = new \DateTimeImmutable('now');
         $rfid_data = [
             'rfid'          => $rfid,
-            'updated_at'    => (new \DateTime('now'))->getTimestamp(),
+            'updated_at'    => $now->getTimestamp(),
             'device_id'     => $device_id
         ];
         $rfid_builder = $this->db->table('rfid_tmp');
@@ -82,8 +83,8 @@ class Rfid extends BaseController
         if (!is_null($existing_record)) {
             return $this->respondCreated(['msg' => 'rfid saved, already used in this session']);
         }
-        $time = (new \DateTime('now'));
-        $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+        $time = (new \DateTimeImmutable('now'));
+        $time = $time->setTimezone($this->tz);
         $record_data = [
             'student_id'    => $student->id,
             'device_id'     => $device_id,

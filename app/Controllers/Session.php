@@ -36,9 +36,8 @@ class Session extends BaseController
         if (is_null($sess)) {
             return $this->failNotFound('data tidak ditemukan');
         }
-        $time = new \DateTime();
-        $time->setTimestamp($sess->criterion_time);
-        $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+        $time = \DateTimeImmutable::createFromFormat('U', $sess->criterion_time);
+        $time = $time->setTimezone($this->tz);
         $sess->date = $time->format('Y-m-d');
         $sess->time = $time->format('H:i');
         return $this->respond($sess);
@@ -50,8 +49,8 @@ class Session extends BaseController
         $count = 1;
         foreach ($sessions as &$sess) {
             $time = (new \DateTime());
-            $time->setTimestamp($sess->criterion_time);
-            $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+            $time = \DateTimeImmutable::createFromFormat('U', $sess->criterion_time);
+            $time = $time->setTimezone($this->tz);
             $sess->date = $time->format('Y-m-d');
             $sess->time = $time->format('H:i:s');
             $sess->counter = $count++;
@@ -71,7 +70,7 @@ class Session extends BaseController
     {
         $data = $this->request->getVar();
         $datetime = \DateTime::createFromFormat('Y-m-d H:i', 
-            $data->date.' '.$data->time, (new \DateTimeZone('Asia/Jakarta')));
+            $data->date.' '.$data->time, $this->tz);
         $data->criterion_time = $datetime->getTimestamp();
         $res = false;
         try {
@@ -96,7 +95,7 @@ class Session extends BaseController
     {
         $data = $this->request->getVar();
         $datetime = \DateTime::createFromFormat('Y-m-d H:i', 
-            $data->date.' '.$data->time, (new \DateTimeZone('Asia/Jakarta')));
+            $data->date.' '.$data->time, $this->tz);
         $data->criterion_time = $datetime->getTimestamp();
         try {
             $this->model->update($id,$data);
@@ -139,9 +138,8 @@ class Session extends BaseController
         $aquery = $this->db->query($sql, [$sess->id]);
         $data = $aquery->getResultObject();
         foreach ($data as &$item) {
-            $time = (new \DateTime());
-            $time->setTimestamp($item->timestamp);
-            $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+            $time = \DateTimeImmutable::createFromFormat('U', $item->timestamp);
+            $time = $time->setTimezone($this->tz);
             $item->time = $time->format('Y-m-d H:i:s');
             $item->action = "<button type='button' onclick='del(".$item->id
             .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></button>";
@@ -156,9 +154,8 @@ class Session extends BaseController
             ." order by att_records.logged_at asc;";
         $query = $this->db->query($sql,[$id]);
         $record = $query->getRow();
-        $time = (new \DateTime());
-        $time->setTimestamp($record->timestamp);
-        $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+        $time = \DateTimeImmutable::createFromFormat('U', $record->timestamp);
+        $time = $time->setTimezone($this->tz);
         $record->time = $time->format('Y-m-d H:i:s');
         if (is_null($record)) {
             return $this->failNotFound('record not found');
@@ -204,12 +201,10 @@ class Session extends BaseController
             return $this->failNotFound('data tidak ditemukan');
         }
         $data = $this->request->getVar();
-        $time = (new \DateTime());
-        $time->setTimestamp($sess->criterion_time);
-        $time->setTimezone(new \DateTimeZone('Asia/Jakarta'));
+        $time = \DateTimeImmutable::createFromFormat('U', $sess->criterion_time);
+        $time = $time->setTimezone($this->tz);
         $date = $time->format('Y-m-d');
-        $new_time = \DateTime::createFromFormat('Y-m-d H:i', $date." ".$data->time, 
-            (new \DateTimeZone('Asia/Jakarta'))); // TODO: default timezone biar lebih enak, gimana ya?
+        $new_time = \DateTime::createFromFormat('Y-m-d H:i', $date." ".$data->time, $this->tz);
         $sql = "insert into att_records(session_id, student_id, logged_at, 'device_id')"
             ." values(?, ?, ?, 'MANUAL');";
         $res = $this->db->query($sql, [$sess->id, $data->student_id, $new_time->getTimestamp()]);
