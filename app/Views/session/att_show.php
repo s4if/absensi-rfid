@@ -3,7 +3,7 @@
 <?= $this->section('content_css'); ?>
 <style type="text/css">
   body {
-    padding-top: 80px;
+    padding-top: 20px;
   }
 </style>
 <?= $this->endSection();?>
@@ -12,30 +12,67 @@
   <div class="card col-lg-12">
     <div class="card-body">
       <h5 class="card-title">Tampilan Presensi</h5>
-      <div class="row mb-3">
-        <button type="button" id="refresh_btn" class="btn btn-primary col-3">Refresh</button>
-        <div class="col-3">[tombol toggle autorefresh disini...]</div>
-        <div class="col-3">[animasi loading autorefres disini...]</div>
-      </div>
-      <div class="row mb-3">
-        [keterangan sesi disini...]
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col">
+            <div class="container-fluid">
+              <div class="row mb-3">
+                <button type="button" id="refresh_btn" class="btn btn-primary col">Refresh</button>
+                <button type="button" id="toggle_btn" class="btn btn-secondary col">Disable Autorefresh</button>
+              </div>
+              <div class="row mb-3">
+                <div class="col btn btn-dark" id="waktu"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="container-fluid">
+              <div class="row mb-3" style="border: 1px solid;">
+                <p><strong>
+                  Tanggal: <?=$date?><br>
+                  Batas Waktu: <?=$time;?><br>
+                  Tipe: <?=$mode;?><br>
+                </strong></p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- 
         TODO: javascript bar untuk progress autorefresh
         TODO: Info Sesi (Penting)
       -->
       <div class="row mb-3">
-        <table id="tbl_presensi" class="table table-striped" style="width:100%">
-          <thead>
-            <tr>
-              <th>NIS</th>
-              <th>Nama</th>
-              <th>Kelas</th>
-              <th>Waktu</th>
-              <th>Keterangan</th>
-            </tr>
-          </thead>
+        <div class="col-8">
+          <div class="row mb3"><h5>Sudah Presensi</h5></div>
+          <table id="tbl_presensi" class="table table-striped mb3" style="width:100%">
+            <thead>
+              <tr>
+                <th>NIS</th>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>Waktu</th>
+                <th>Keterangan</th>
+              </tr>
+            </thead>
           </table>
+        </div>
+        <div class="col-4" style="border: 1px solid black;">
+          <div class="row mb3"><h5>Belum Presensi</h5></div>
+          <div>
+            <table id="tbl_belum" class="table table-striped mb3" style="width:100%">
+              <thead>
+                <tr>
+                  <th>Nama</th>
+                  <th>Kelas</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -46,7 +83,9 @@
 <script src="<?=base_url()?>/js/jquery.dataTables.min.js"></script>
 <script src="<?=base_url()?>/js/dataTables.bootstrap5.min.js"></script>
 <script type="text/javascript">
+let autrefresh_state = true;
 let tbl_presensi;
+let tbl_belum;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -59,16 +98,43 @@ $(document).ready(async () => {
       { data: 'nis' },
       { data: 'name' },
       { data: 'classroom' },
-      { data: 'time' },
+      { data: 'time_short' },
       { data: 'comment' },
     ],
   });
+
+  tbl_belum = $('#tbl_belum').DataTable({
+    ajax: '<?=base_url()?>/presensi/not_yet_attend/<?=$sess_id;?>',
+    columns: [
+      { data: 'name' },
+      { data: 'classroom' },
+    ],
+  });
+
   document.getElementById('refresh_btn').onclick = async () => {
     tbl_presensi.ajax.reload();
+    tbl_belum.ajax.reload();
+  };
+  document.getElementById('toggle_btn').onclick = async () => {
+    if (autrefresh_state) {
+      autrefresh_state = false;
+      document.getElementById('waktu').innerHTML = "refresh disabled"
+      document.getElementById('toggle_btn').innerHTML = "Enable Autorefresh";
+    } else {
+      autrefresh_state = true;
+      document.getElementById('toggle_btn').innerHTML = "Disable Autorefresh";
+    }
   };
   while(true){
     await sleep(1000);
-    tbl_presensi.ajax.reload();
+    if (autrefresh_state) {
+      tbl_presensi.ajax.reload();
+      tbl_belum.ajax.reload();
+      let today = new Date();
+      let time = today.getHours() + ":" + String(today.getMinutes()).padStart(2, '0') 
+        + ":" + String(today.getSeconds()).padStart(2, '0');
+      document.getElementById('waktu').innerHTML = "last refresh : ["+time+"]";
+    }
   }
 });
 </script>

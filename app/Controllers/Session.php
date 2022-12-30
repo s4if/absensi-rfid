@@ -48,7 +48,6 @@ class Session extends BaseController
         $sessions = $this->model->orderBy('criterion_time', 'ASC')->findAll(); // array objek sesi
         $count = 1;
         foreach ($sessions as &$sess) {
-            $time = (new \DateTime());
             $time = \DateTimeImmutable::createFromFormat('U', $sess->criterion_time);
             $time = $time->setTimezone($this->tz);
             $sess->date = $time->format('Y-m-d');
@@ -143,6 +142,7 @@ class Session extends BaseController
             $item->time = $time->format('Y-m-d H:i:s');
             $item->action = "<button type='button' onclick='del(".$item->id
             .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></button>";
+            $item->time_short = $time->format('H:i');
             $item->comment = "";
         }
         return $this->respond(['data' => $data]);
@@ -158,10 +158,19 @@ class Session extends BaseController
         $time = \DateTimeImmutable::createFromFormat('U', $record->timestamp);
         $time = $time->setTimezone($this->tz);
         $record->time = $time->format('Y-m-d H:i:s');
+        $record->time_short = $time->format('H:i');
         if (is_null($record)) {
             return $this->failNotFound('record not found');
         }
         return $this->respond($record);
+    }
+
+    public function getNotAttend($id){
+        $sql = 'SELECT students.name as name, students.classroom as classroom from students where classroom <> "GURU" and'
+        .' not EXISTS (SELECT 1 from att_records where att_records.session_id=? and att_records.student_id=students.id);';
+        $aquery = $this->db->query($sql,[$id]);
+        $records = $aquery->getResultObject();
+        return $this->respond(['data' => $records]);
     }
 
     public function deleteAttRecord($id)

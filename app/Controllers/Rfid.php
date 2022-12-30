@@ -140,10 +140,19 @@ class Rfid extends BaseController
                 'alert'     => $this->session->alert,
             ]);
         } else {
+            $hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jum\'at', 'Sabtu', 'Ahad'];
+            $bulan = ['Januari', 'Frebruari', 'Maret', 'April', 'Mei', 'Juni',
+                    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            $time = \DateTimeImmutable::createFromFormat('U', $sess->criterion_time);
+            $time = $time->setTimezone($this->tz);
             return view('session/att_show', [
                 'title'     => 'Daftar Hadir',
                 'alert'     => $this->session->alert,
                 'sess_id'   => $sess->id,
+                'mode'      => $sess->mode,
+                'date'      => $hari[$time->format('N')-1].$time->format(', d ').$bulan[$time->format('n')-1]
+                                .$time->format(' Y'),
+                'time'      => $time->format('H:i')
             ]);
         }
     }

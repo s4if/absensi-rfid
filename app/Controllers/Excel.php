@@ -41,7 +41,7 @@ class Excel extends BaseController
         $sql_insert = "insert into students (nis, name, gender, classroom)"
             ." VALUES(:nis:, :name:, :gender:, :classroom:);";
         $sql_update = "update students set name = :name:, gender = :gender:,"
-            ." classroom = :classroom: where nis = :nis: ;";
+            ." classroom = :classroom:, deleted_at = null where nis = :nis: ;";
         $this->db->transStart();
         $debug_data = [];
         for ($row = 5; $row <= $h_row; $row++) {
