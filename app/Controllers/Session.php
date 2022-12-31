@@ -50,8 +50,8 @@ class Session extends BaseController
         foreach ($sessions as &$sess) {
             $time = \DateTimeImmutable::createFromFormat('U', $sess->criterion_time);
             $time = $time->setTimezone($this->tz);
-            $sess->date = $time->format('Y-m-d');
-            $sess->time = $time->format('H:i:s');
+            $sess->date = $time->format('l, j M Y');
+            $sess->time = $time->format('H:i');
             $sess->counter = $count++;
             $sess->action = "<a type='button' href='".base_url()."/admin/presensi/".$sess->id
             ."' class='btn btn-primary btn-sm'><i class='bi-list-check'></i></a>"
@@ -68,26 +68,41 @@ class Session extends BaseController
     public function create()
     {
         $data = $this->request->getVar();
-        $datetime = \DateTime::createFromFormat('Y-m-d H:i', 
+        $datetime = \DateTimeImmutable::createFromFormat('Y-m-d H:i', 
             $data->date.' '.$data->time, $this->tz);
         $data->criterion_time = $datetime->getTimestamp();
-        $res = false;
+        $slot = $this->getSlot($data->date,$data->mode, true);
+        // do simpan
         try {
-            $sess = $this->model->onlyDeleted()->where('name', $data->name)->first();
-            if (is_null($sess)) {
+            if (is_null($slot)) {
                 $res = $this->model->insert($data, false);
-            } else {
-                $data['deleted_at'] = null;
-                $res = $this->model->update($sess->id,$data);
+                return $this->respondCreated($data);
+            } 
+            if (is_null($slot->deleted_at)) {
+                return $this->failResourceExists("slot sudah dipakai, dan masih aktif");
             }
-        } catch (\ErrorException $e) {
-            return $this->failResourceExists('simpan error, cek nama!');
-        }
-        if ($res) {
+            $data->deleted_at = null;
+            $res = $this->model->update($slot->id,$data);
             return $this->respondCreated($data);
-        } else {
-            return $this->fail('unknown error', 400);
+        } catch (\ErrorException $e) {
+            return $this->failValidationError('simpan error, cek nama!');
         }
+    }
+
+    private function getSlot($str_date, $mode, $include_deleted = false) // format: Y-m-d
+    {
+        // check slot
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $str_date
+            .' 00:00:00', $this->tz );
+        $s_timestamp = $date->getTimestamp();
+        $e_timestamp = $s_timestamp  + 86399;
+        $res = false;
+        $sqlc = "select * from sessions where criterion_time >= ? and criterion_time <= ? and"
+                    ." mode = ?";
+        $suffix = ($include_deleted)?";":" and deleted_at is null;";
+        // undelete sessions rawan bikin sesi tidak valid
+        $c_query = $this->db->query($sqlc, [$s_timestamp, $e_timestamp, $mode]);
+        return $c_query->getRow();
     }
 
     public function update($id)

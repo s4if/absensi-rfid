@@ -45,7 +45,6 @@ class Attendances extends Migration
     {
         $this->forge->dropForeignKey('att_records', 'student_id');
         $this->forge->dropForeignKey('att_records', 'session_id');
-        $this->forge->dropForeignKey('att_records', 'device_id');
         $this->forge->dropTable('att_records');
     }
 }

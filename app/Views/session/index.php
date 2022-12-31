@@ -10,8 +10,10 @@
 </div>
 <div class="row mb-3">
 	<button type="button" id="add_btn" class="btn btn-success col-md-3">
-		<i class="bi-database-fill-add"></i>&nbsp;&nbsp;Tambah Sesi <!-- TODO: tambah generate, 
-			pakai template, formatnya yaml atau json  -->
+		<i class="bi-database-fill-add"></i>&nbsp;&nbsp;Tambah Sesi
+	</button>
+	<button type="button" id="import_btn" class="btn btn-secondary col-md-3">
+		<i class="bi-upload"></i>&nbsp;&nbsp;Import Sesi
 	</button>
 </div>
 <div class="row mb-3">
@@ -54,7 +56,7 @@
 	</div>
 </div>
 
-<div class="modal fade" id="edit_modal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="tbh_modal" tabindex="-1" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">
 		  	<div class="modal-header">
@@ -65,19 +67,19 @@
 		  		<form>
 					<div class="mb-3">
 						<label class="form-label">Nama</label>
-						<input type="text" id="edit_name" name="name" class="form-control">
+						<input type="text" id="tbh_name" name="name" class="form-control">
 					</div>
 					<div class="mb-3">
 						<label class="form-label">Tanggal</label>
-						<input type="date" id="edit_date" name="date" class="form-control">
+						<input type="date" id="tbh_date" name="date" class="form-control">
 					</div>
 					<div class="mb-3">
 						<label class="form-label">Waktu</label>
-						<input type="time" id="edit_time" name="time" class="form-control">
+						<input type="time" id="tbh_time" name="time" class="form-control">
 					</div>
 					<div class="mb-3">
 						<label class="form-label">Mode</label>
-						<select class="form-select" id="edit_mode" name="mode">
+						<select class="form-select" id="tbh_mode" name="mode">
 							<option value="check-in">Check In</option>
 							<option value="check-out">Check Out</option>
 						</select>						
@@ -86,7 +88,60 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+				<button type="button" id="tbh_submit" class="btn btn-success">Simpan</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="edit_modal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  	<div class="modal-header">
+			    <h1 class="modal-title fs-5">Edit Sesi</h1>
+			    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		  	</div>
+		  	<div class="modal-body">
+		  		<div class="mb-3">
+		  			<p>
+		  				Nama: <b id="edit_name"></b><br>
+		  				Mode: <b id="edit_mode"></b><br>
+		  				Tanggal: <b id="edit_date"></b><br>
+		  			</p>
+		  		</div>
+		  		<form>
+					<div class="mb-3">
+						<label class="form-label">Waktu</label>
+						<input type="time" id="edit_time" name="time" class="form-control">
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
 				<button type="button" id="edit_submit" class="btn btn-success">Simpan</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="upload_modal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		  	<div class="modal-header">
+			    <h1 class="modal-title fs-5">Import Data</h1>
+			    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		  	</div>
+		  	<div class="modal-body">
+		  		<form>
+					<div class="mb-3">
+						<label class="form-label">Template : </label>
+						<input type="file" id="upload_file" required name="file" accept=".xls" class="form-control">
+			        </div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+				<button type="button" id="upload_submit" class="btn btn-success">Upload</button>
 			</div>
 		</div>
 	</div>
@@ -100,6 +155,11 @@
 let tbl_sesi;
 
 // del element
+let upload_modal = new bootstrap.Modal('#upload_modal', {
+	'keyboard':true,
+});
+
+// del element
 let del_modal = new bootstrap.Modal('#del_modal', {
 	'keyboard':true,
 });
@@ -109,11 +169,21 @@ let del_date = document.getElementById('del_date');
 let del_mode = document.getElementById('del_mode');
 let del_time = document.getElementById('del_time');
 
+// tambah elemet
+let tbh_modal = new bootstrap.Modal('#tbh_modal', {
+	'keyboard':true,
+});
+let em_title = document.getElementById('em_title');
+let tbh_name = document.getElementById('tbh_name');
+let tbh_date = document.getElementById('tbh_date');
+let tbh_time = document.getElementById('tbh_time');
+let tbh_mode = document.getElementById('tbh_mode');
+let tbh_submit = document.getElementById('tbh_submit');
+
 // edit elemet
 let edit_modal = new bootstrap.Modal('#edit_modal', {
 	'keyboard':true,
 });
-let em_title = document.getElementById('em_title');
 let edit_name = document.getElementById('edit_name');
 let edit_date = document.getElementById('edit_date');
 let edit_time = document.getElementById('edit_time');
@@ -125,17 +195,15 @@ async function edit(id) {
     let response = await fetch('<?=base_url();?>/admin/get_sesi/'+id);
     if (response.ok) {
     	let data = await response.json();
-    	edit_name.value = data.name;
-    	edit_date.value = data.date;
+    	edit_name.innerHTML = data.name;
+    	edit_date.innerHTML = data.date;
     	edit_time.value = data.time;
-    	edit_mode.value = data.mode;
+    	edit_mode.innerHTML = data.mode;
     }
     edit_submit.onclick = async () => {
     	let data = {
-	    	'name' : edit_name.value,
-	    	'date' : edit_date.value,
+    		'date' : edit_date.innerHTML,
 	    	'time' : edit_time.value,
-	    	'mode' : edit_mode.value,
     	};
     	console.log(data);
     	let response = await fetch('<?=base_url();?>/admin/edit_sesi/'+id, {
@@ -196,16 +264,16 @@ $(document).ready(function () {
     });
     document.getElementById('add_btn').onclick = async () => {
     	em_title.innerHTML = 'Tambah Sesi';
-    	edit_name.value = "";
-    	edit_date.value = "";
-    	edit_time.value = "";
-    	edit_mode.value = "";
-    	edit_submit.onclick = async () => {
+    	tbh_name.value = "";
+    	tbh_date.value = "";
+    	tbh_time.value = "";
+    	tbh_mode.value = "";
+    	tbh_submit.onclick = async () => {
 	    	let data = {
-		    	'name' : edit_name.value,
-		    	'date' : edit_date.value,
-		    	'time' : edit_time.value,
-		    	'mode' : edit_mode.value,
+		    	'name' : tbh_name.value,
+		    	'date' : tbh_date.value,
+		    	'time' : tbh_time.value,
+		    	'mode' : tbh_mode.value,
 	    	};
 	    	console.log(data);
 	    	let response = await fetch('<?=base_url();?>/admin/tambah_sesi', {
@@ -219,12 +287,37 @@ $(document).ready(function () {
 			if (response.ok) {
 				alert('Simpan Berhasil!');
 				tbl_sesi.ajax.reload();
-    			edit_modal.toggle();
+    			tbh_modal.toggle();
+			} else if (response.status == 409){
+				alert('Slot telah terpakai!');
 			} else {
-				alert('Simpan Gagal!');
+				alert('Simpan Gagal, unknown error!');
 			}
     	};
-    	edit_modal.toggle();
+    	tbh_modal.toggle();
+    };
+
+    let import_btn = document.getElementById('import_btn');
+    import_btn.onclick = async () => {
+		upload_modal.toggle();
+    }
+    let upload_submit = document.getElementById('upload_submit');
+    upload_submit.onclick = async () => {
+    	let fd = new FormData();
+    	let upload_file = document.getElementById('upload_file');
+    	let current_file = upload_file.files[0];
+		fd.append('template', current_file);
+		let response = await fetch('<?=base_url()?>/admin/import_sesi', {
+			method: "POST", 
+			body: fd,
+		});
+		if (response.ok) {
+			alert('upload berhasil');
+			upload_modal.toggle();
+			tbl_sesi.ajax.reload();
+		} else {
+			alert('unkown error');
+		}
     };
 });
 </script>

@@ -77,6 +77,7 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
 
     // import export
     $routes->post('import_siswa', 'Excel::importSiswa');
+    $routes->post('import_sesi', 'Excel::importSesi');
 });
 
 //api call

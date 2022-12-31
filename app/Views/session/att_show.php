@@ -67,9 +67,6 @@
                   <th>Kelas</th>
                 </tr>
               </thead>
-              <tbody>
-                
-              </tbody>
             </table>
           </div>
         </div>
@@ -101,6 +98,7 @@ $(document).ready(async () => {
       { data: 'time_short' },
       { data: 'comment' },
     ],
+    pageLength: 25,
   });
 
   tbl_belum = $('#tbl_belum').DataTable({
@@ -109,6 +107,7 @@ $(document).ready(async () => {
       { data: 'name' },
       { data: 'classroom' },
     ],
+    pageLength: 25,
   });
 
   document.getElementById('refresh_btn').onclick = async () => {
