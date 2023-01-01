@@ -46,6 +46,7 @@ $routes->get('logout', static function () {
 $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->get('/', 'Admin::index');
     $routes->get('beranda', 'Admin::index');
+    $routes->put('ganti_password', 'Admin::password');
 
     // management Siswa
     $routes->get('siswa', 'Student::index');
@@ -78,6 +79,12 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     // import export
     $routes->post('import_siswa', 'Excel::importSiswa');
     $routes->post('import_sesi', 'Excel::importSesi');
+
+    // rekap
+    // belum jadi
+    $routes->get('rekap',static function() {
+        return "Belum Dibuat";
+    });
 });
 
 //api call

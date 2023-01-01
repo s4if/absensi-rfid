@@ -27,7 +27,7 @@
                 User Menu
               </a>
               <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="<?=base_url()?>/admin/password">Ganti Password</a></li>
+                <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#passwd_modal">Ganti Password</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="<?=base_url()?>/logout">Logout</a></li>
               </ul>
@@ -49,7 +49,7 @@
                 <a href="<?=base_url()?>/admin/sesi" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline bi bi-database-gear">&nbsp;&nbsp;Atur Sesi</span>
                 </a>
-                <a href="<?=base_url()?>/admin/presensi" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <a href="<?=base_url()?>/presensi" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline bi bi-person-check">&nbsp;&nbsp;Presensi</span>
                 </a>
                 <a href="<?=base_url()?>/admin/rekap" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
@@ -73,11 +73,62 @@
         </div>
     </div>
 </div>
+<!-- Modal -->
+<div class="modal fade" id="passwd_modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Ganti Password</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Password Lama</label>
+          <input type="password" class="form-control" id="old_password">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password Baru</label>
+          <input type="password" class="form-control" id="new_password">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Konfirmasi Password</label>
+          <input type="password" class="form-control" id="confirm_password">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" onclick="ganti_password()" class="btn btn-primary">simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
 <?php echo $this->renderSection('content_modal');?>
-        
-    <script src="<?=base_url()?>/js/jquery-3.6.2.min.js"></script>
-    <script src="<?=base_url()?>/js/popper.min.js"></script>
-    <script src="<?=base_url()?>/js/bootstrap.bundle.min.js"></script>
-    <?php echo $this->renderSection('content_js');?>
-  </body>
+    
+<script src="<?=base_url()?>/js/jquery-3.6.2.min.js"></script>
+<script src="<?=base_url()?>/js/popper.min.js"></script>
+<script src="<?=base_url()?>/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript">
+async function ganti_password(){
+  let data = {
+    'old_password': document.getElementById('old_password').value,
+    'new_password': document.getElementById('new_password').value,
+    'confirm_password': document.getElementById('confirm_password').value
+  };
+  let res2 = await fetch('<?=base_url();?>/admin/ganti_password/', {
+    method: 'PUT', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    redirect: 'follow', // manual, *follow, error
+    body: JSON.stringify(data) // body data type must match "Content-Type" header
+  });
+  if (res2.ok) {
+    alert('Simpan Berhasil!');
+  } else {
+    alert('Simpan Gagal!');
+  }
+}
+</script>
+<?php echo $this->renderSection('content_js');?>
+</body>
 </html>
