@@ -111,8 +111,10 @@ $(document).ready(async () => {
   });
 
   document.getElementById('refresh_btn').onclick = async () => {
-    tbl_presensi.ajax.reload();
-    tbl_belum.ajax.reload();
+    Promise.all([
+      (async () => tbl_presensi.ajax.reload())(),
+      (async () => tbl_belum.ajax.reload())(),
+    ]);
   };
   document.getElementById('toggle_btn').onclick = async () => {
     if (autrefresh_state) {
@@ -124,17 +126,26 @@ $(document).ready(async () => {
       document.getElementById('toggle_btn').innerHTML = "Disable Autorefresh";
     }
   };
-  while(true){
-    await sleep(1000);
-    if (autrefresh_state) {
-      tbl_presensi.ajax.reload();
-      tbl_belum.ajax.reload();
-      let today = new Date();
-      let time = today.getHours() + ":" + String(today.getMinutes()).padStart(2, '0') 
-        + ":" + String(today.getSeconds()).padStart(2, '0');
-      document.getElementById('waktu').innerHTML = "last refresh : ["+time+"]";
-    }
-  }
+
+  Promise.all([
+    (async () => {
+      while(true){
+        await sleep(1000);
+        if (autrefresh_state) {
+          tbl_presensi.ajax.reload();
+          tbl_belum.ajax.reload();
+          let today = new Date();
+          let time = today.getHours() + ":" + String(today.getMinutes()).padStart(2, '0') 
+            + ":" + String(today.getSeconds()).padStart(2, '0');
+          document.getElementById('waktu').innerHTML = "last refresh : ["+time+"]";
+        }
+      }
+    })(),
+    (async () => {
+      await sleep(1380000);
+      location.reload();
+    })(),
+  ]);
 });
 </script>
 <?= $this->endSection();?>

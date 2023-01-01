@@ -17,3 +17,16 @@
   </div>
 </div>
 <?= $this->endSection();?>
+<?= $this->section('content_js');?>
+<script type="text/javascript">
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await sleep(13000);
+  location.reload();
+});
+</script>
+<?= $this->endSection();?>
