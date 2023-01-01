@@ -25,7 +25,7 @@ function sleep(ms) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  await sleep(13000);
+  await sleep(5000);
   location.reload();
 });
 </script>

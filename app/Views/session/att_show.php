@@ -80,6 +80,7 @@
 <script src="<?=base_url()?>/js/jquery.dataTables.min.js"></script>
 <script src="<?=base_url()?>/js/dataTables.bootstrap5.min.js"></script>
 <script type="text/javascript">
+$.fn.dataTable.ext.errMode = 'none';
 let autrefresh_state = true;
 let tbl_presensi;
 let tbl_belum;
@@ -100,6 +101,9 @@ $(document).ready(async () => {
     ],
     pageLength: 25,
   });
+  tbl_presensi.on('error.dt', () => {
+    location.reload();
+  });
 
   tbl_belum = $('#tbl_belum').DataTable({
     ajax: '<?=base_url()?>/presensi/not_yet_attend/<?=$sess_id;?>',
@@ -108,6 +112,9 @@ $(document).ready(async () => {
       { data: 'classroom' },
     ],
     pageLength: 25,
+  });
+  tbl_belum.on('error.dt', () => {
+    alert('data tidak bisa diproses');
   });
 
   document.getElementById('refresh_btn').onclick = async () => {
@@ -132,8 +139,10 @@ $(document).ready(async () => {
       while(true){
         await sleep(1000);
         if (autrefresh_state) {
-          tbl_presensi.ajax.reload();
-          tbl_belum.ajax.reload();
+          Promise.all([
+            (async () => tbl_presensi.ajax.reload())(),
+            (async () => tbl_belum.ajax.reload())(),
+          ]);
           let today = new Date();
           let time = today.getHours() + ":" + String(today.getMinutes()).padStart(2, '0') 
             + ":" + String(today.getSeconds()).padStart(2, '0');
@@ -142,7 +151,7 @@ $(document).ready(async () => {
       }
     })(),
     (async () => {
-      await sleep(1380000);
+      await sleep(2700000);
       location.reload();
     })(),
   ]);
