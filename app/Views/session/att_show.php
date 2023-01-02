@@ -100,6 +100,7 @@ $(document).ready(async () => {
       { data: 'comment' },
     ],
     pageLength: 25,
+    order: []
   });
   tbl_presensi.on('error.dt', () => {
     location.reload();
