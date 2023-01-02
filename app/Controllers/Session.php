@@ -148,7 +148,7 @@ class Session extends BaseController
         $sql = "select students.nis as nis, students.name as name, students.classroom as classroom,"
             ." att_records.logged_at as timestamp, att_records.id as id from att_records inner join"
             ." students on att_records.student_id=students.id where att_records.session_id=?"
-            ." order by att_records.logged_at asc;";
+            ." order by att_records.logged_at desc;";
         $aquery = $this->db->query($sql, [$sess->id]);
         $data = $aquery->getResultObject();
         foreach ($data as &$item) {
