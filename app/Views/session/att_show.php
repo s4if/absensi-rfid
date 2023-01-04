@@ -115,7 +115,7 @@ $(document).ready(async () => {
     pageLength: 25,
   });
   tbl_belum.on('error.dt', () => {
-    alert('data tidak bisa diproses');
+    location.reload();
   });
 
   document.getElementById('refresh_btn').onclick = async () => {
