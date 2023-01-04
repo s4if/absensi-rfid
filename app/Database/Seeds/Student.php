@@ -33,6 +33,18 @@ class Student extends Seeder
                 'gender'    => 'L',
                 'classroom' => 'TKJ2',
             ],
+            [
+                'nis'       => '9001',
+                'name'      => 'SUKARI',
+                'gender'    => 'L',
+                'classroom' => 'GURU',
+            ],
+            [
+                'nis'       => '9002',
+                'name'      => 'Surtini',
+                'gender'    => 'P',
+                'classroom' => 'GURU',
+            ],
         ];
         foreach ($data as $row) {
             $this->db->table('students')->insert($row);
