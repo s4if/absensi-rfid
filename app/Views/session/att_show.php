@@ -1,4 +1,4 @@
-<?php echo $this->extend('login/layout'); ?>
+<?php echo $this->extend('session/att_layout'); ?>
 
 <?= $this->section('content_css'); ?>
 <style type="text/css">
@@ -17,11 +17,16 @@
           <div class="col">
             <div class="container-fluid">
               <div class="row mb-3">
-                <button type="button" id="refresh_btn" class="btn btn-primary col">Refresh</button>
-                <button type="button" id="toggle_btn" class="btn btn-secondary col">Disable Autorefresh</button>
+                <div class="btn-group" role='group'>
+                  <button type="button" id="refresh_btn" class="btn btn-primary col">Refresh</button>
+                  <button type="button" id="toggle_btn" class="btn btn-secondary col">Disable Autorefresh</button>
+                </div>
               </div>
               <div class="row mb-3">
-                <div class="col btn btn-dark" id="waktu"></div>
+                <div class="btn-group" role="group">
+                  <button type="button" id="guru_btn" class="btn btn-success col">Presensi Guru</button>
+                  <button type="button" class="col btn btn-dark" id="waktu"></button>
+                </div>
               </div>
             </div>
           </div>
@@ -45,7 +50,7 @@
       <div class="row mb-3">
         <div class="col-8">
           <div class="row mb3"><h5>Sudah Presensi</h5></div>
-          <table id="tbl_presensi" class="table table-striped mb3" style="width:100%">
+          <table id="tbl_presensi" class="table table-striped table-sm mb3" style="width:100%">
             <thead>
               <tr>
                 <th>NIS</th>
@@ -60,7 +65,7 @@
         <div class="col-4" style="border: 1px solid black;">
           <div class="row mb3"><h5>Belum Presensi</h5></div>
           <div>
-            <table id="tbl_belum" class="table table-striped mb3" style="width:100%">
+            <table id="tbl_belum" class="table table-striped table-sm mb3" style="width:100%">
               <thead>
                 <tr>
                   <th>Nama</th>
@@ -119,10 +124,8 @@ $(document).ready(async () => {
   });
 
   document.getElementById('refresh_btn').onclick = async () => {
-    Promise.all([
-      (async () => tbl_presensi.ajax.reload())(),
-      (async () => tbl_belum.ajax.reload())(),
-    ]);
+    tbl_presensi.ajax.reload();
+    tbl_belum.ajax.reload();
   };
   document.getElementById('toggle_btn').onclick = async () => {
     if (autrefresh_state) {
@@ -135,15 +138,36 @@ $(document).ready(async () => {
     }
   };
 
+  let mdl_guru = new bootstrap.Modal('#mdl_guru', {
+    'keyboard':true,
+  });
+  let tbl_root = document.getElementById('tbl_root');
+
+  document.getElementById('guru_btn').onclick = async () => {
+    tbl_root.innerHTML = "";
+    let response = await fetch('<?=base_url();?>/presensi/absen_guru');
+    if (response.ok) {
+      data = await response.json();
+      let no = 1;
+      data.forEach(async (row) => {
+        let str_row = "<tr><td>"+no+"</td><td>"+row.name+"</td><td>"+row.time+"</td><td>"+row.rfid+"</td></tr>";
+        tbl_root.insertAdjacentHTML('beforeend', str_row);
+        no++;
+      });
+      mdl_guru.toggle();
+    } else {
+      alert("error?");
+    }
+  };
+
   Promise.all([
     (async () => {
       while(true){
-        await sleep(1000);
+        await sleep(500);
         if (autrefresh_state) {
-          Promise.all([
-            (async () => tbl_presensi.ajax.reload())(),
-            (async () => tbl_belum.ajax.reload())(),
-          ]);
+          tbl_presensi.ajax.reload();
+          await sleep(500);
+          tbl_belum.ajax.reload();
           let today = new Date();
           let time = today.getHours() + ":" + String(today.getMinutes()).padStart(2, '0') 
             + ":" + String(today.getSeconds()).padStart(2, '0');

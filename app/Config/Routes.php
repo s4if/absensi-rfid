@@ -94,6 +94,7 @@ $routes->get('rfid/get_current', 'Rfid::getCurrent');
 $routes->get('presensi', 'Rfid::showAttendance');
 $routes->get('presensi/get_presensi/(:num)', 'Session::getAttendaces/$1');
 $routes->get('presensi/not_yet_attend/(:num)', 'Session::getNotAttend/$1');
+$routes->get('presensi/absen_guru', 'Rfid::getAbsenGuru');
 //$routes->get('rfid/session', 'Rfid::getSession');
 /*
  * --------------------------------------------------------------------

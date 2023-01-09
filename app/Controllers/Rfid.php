@@ -154,6 +154,29 @@ class Rfid extends BaseController
         return $query->getRow();
     }
 
+    public function getAbsenGuru()
+    {
+        $time = (new \DateTimeImmutable('now'));
+        $time = $time->setTimezone($this->tz);
+        $str_date = $time->format('Y-m-d');
+        // kalau dari format string, langsung dikasih timezone-nya!
+        $midnight = (\DateTime::createFromFormat('Y-m-d H:i:s', $str_date." 00:00:00", $this->tz));
+        $lower_limit = $midnight->getTimestamp();
+        $sql = "select s.name as name, l.logged_at as raw_time, s.rfid as rfid"
+                ." from teachers_logs as l join students as s on l.student_id=s.id where l.logged_at"
+                ." > :lower_limit: order by l.logged_at asc;";
+        $query = $this->db->query($sql, ['lower_limit' => $lower_limit]);
+        $data = $query->getResultObject();
+        foreach ($data as &$row) {
+            $r_time = \DateTime::createFromFormat('U', $row->raw_time);
+            $r_time->setTimezone($this->tz);
+            $row->time = $r_time->format("H:i");
+        }
+        unset($row);
+        return $this->respond($data, 200);
+        //return $lower_limit;
+    }
+
     public function showAttendance(){
         $sess = $this->getSession();
         if (is_null($sess)) {
