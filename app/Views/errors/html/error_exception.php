@@ -21,8 +21,8 @@
         <div class="container">
             <h1><?= esc($title), esc($exception->getCode() ? ' #' . $exception->getCode() : '') ?></h1>
             <p>
-                <?= nl2br(esc($exception->getMessage())) ?>
-                <a href="https://www.duckduckgo.com/?q=<?= urlencode($title . ' ' . preg_replace('#\'.*\'|".*"#Us', '', $exception->getMessage())) ?>"
+                <?= nl2br((string) esc($exception->getMessage())) ?>
+                <a href="https://www.duckduckgo.com/?q=<?= urlencode($title . ' ' . preg_replace('#\'.*\'|".*"#Us', '', (string) $exception->getMessage())) ?>"
                    rel="noreferrer" target="_blank">search &rarr;</a>
             </p>
         </div>
@@ -85,7 +85,7 @@
                                         <?php
                                         $params = null;
                                         // Reflection by name is not available for closure function
-                                        if (substr($row['function'], -1) !== '}') {
+                                        if (!str_ends_with((string) $row['function'], '}')) {
                                             $mirror = isset($row['class']) ? new \ReflectionMethod($row['class'], $row['function']) : new \ReflectionFunction($row['function']);
                                             $params = $mirror->getParameters();
                                         }
@@ -199,7 +199,7 @@
                         </tr>
                         <tr>
                             <td>HTTP Method</td>
-                            <td><?= esc(strtoupper($request->getMethod())) ?></td>
+                            <td><?= esc(strtoupper((string) $request->getMethod())) ?></td>
                         </tr>
                         <tr>
                             <td>IP Address</td>

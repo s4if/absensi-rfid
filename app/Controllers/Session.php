@@ -86,7 +86,7 @@ class Session extends BaseController
             $data->deleted_at = null;
             $res = $this->model->update($slot->id,$data);
             return $this->respondCreated($data);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->failValidationError('simpan error, cek nama!');
         }
     }
@@ -116,7 +116,7 @@ class Session extends BaseController
         try {
             $this->model->update($id,$data);
             return $this->respondCreated([]);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->failNotFound('resource tidak ditemukan');
         }
     }
@@ -126,7 +126,7 @@ class Session extends BaseController
         try {
             $this->model->delete($id);
             return $this->respondDeleted([]);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->failNotFound('resource tidak ditemukan');
         }
     }
@@ -196,7 +196,7 @@ class Session extends BaseController
         try {
             $res = $this->db->query($sql,[$id]);
             return ($res)?$this->respondDeleted(['id' => $id]):$this->failNotFound('item tidak ditemukan');
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->fail('unknown error', 400);
         }
     }

@@ -29,11 +29,11 @@ class Admin extends BaseController
         if ($data->new_password != $data->confirm_password) {
             return $this->failValidationError('Cek kembali password yang dimasukkan');
         }
-        if (!password_verify($data->old_password, $admin_obj->password)) {
+        if (!password_verify((string) $data->old_password, (string) $admin_obj->password)) {
             return $this->failValidationError('Cek kembali password yang dimasukkan');
         }
         $admin_mdl->update($id, [
-            'password' => password_hash($data->new_password, PASSWORD_BCRYPT)
+            'password' => password_hash((string) $data->new_password, PASSWORD_BCRYPT)
         ]);
         return $this->respondCreated([]);
     }

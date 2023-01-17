@@ -115,7 +115,7 @@ class Student extends BaseController
         try {
             $this->model->update($id,$data);
             return $this->respondCreated(['msg' => 'data edited']);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->fail('unknown error',400); // di spesifikkan lagi?
         }
     }
@@ -125,7 +125,7 @@ class Student extends BaseController
         $res = true;
         try {
             $res = $this->model->delete($id);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             $res = false;
         }
         if ($res) {

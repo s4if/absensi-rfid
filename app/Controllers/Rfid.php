@@ -24,7 +24,7 @@ class Rfid extends BaseController
             $log_date = $log_date->setTimezone($this->tz);
             $current->time = $log_date->format('l, d M Y H:i:s [e]');
             return $this->respond($current);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->failNotFound('rfid belum ada yang masuk');
         }
             
@@ -108,7 +108,7 @@ class Rfid extends BaseController
         try {
             $att_builder->insert($record_data);
             return $this->respondCreated(['msg' => 'attendance saved']);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->fail('unknown error',400);
         }
 
@@ -126,9 +126,9 @@ class Rfid extends BaseController
         try {
             $builder->update(['rfid' => $rfid], ['nis' => $nis]);
             return $this->respondCreated(['rfid' => $rfid]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return $this->fail('unknown failure', 400);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return false;
         }
     }
