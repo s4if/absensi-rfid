@@ -14,6 +14,8 @@ class Session extends BaseController
     /**
      * Constructor.
      */
+
+    protected $model;
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
         // Do Not Edit This Line

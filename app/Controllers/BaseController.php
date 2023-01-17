@@ -37,6 +37,10 @@ abstract class BaseController extends Controller
      */
     protected $helpers = [];
 
+    protected $session;
+    protected $db;
+    protected $tz;
+
     /**
      * Constructor.
      */

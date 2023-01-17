@@ -82,9 +82,7 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
 
     // rekap
     // belum jadi
-    $routes->get('rekap',static function() {
-        return "Belum Dibuat";
-    });
+    $routes->get('rekap',static fn() => "Belum Dibuat");
 });
 
 //api call
