@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -28,7 +26,6 @@ declare(strict_types=1);
 namespace Kint\Zval\Representation;
 
 use Kint\Utils;
-use RuntimeException;
 use SplFileInfo;
 
 class SplFileInfoRepresentation extends Representation
@@ -38,14 +35,14 @@ class SplFileInfoRepresentation extends Representation
     public $path;
     public $realpath = null;
     public $linktarget = null;
-    public $size = null;
+    public $size;
     public $is_dir = false;
     public $is_file = false;
     public $is_link = false;
     public $owner = null;
     public $group = null;
-    public $ctime = null;
-    public $mtime = null;
+    public $ctime;
+    public $mtime;
     public $typename = 'Unknown file';
     public $typeflag = '-';
     public $hints = ['fspath'];
@@ -54,30 +51,24 @@ class SplFileInfoRepresentation extends Representation
     {
         parent::__construct('SplFileInfo');
 
+        if ($fileInfo->getRealPath()) {
+            $this->realpath = $fileInfo->getRealPath();
+            $this->perms = $fileInfo->getPerms();
+            $this->size = $fileInfo->getSize();
+            $this->owner = $fileInfo->getOwner();
+            $this->group = $fileInfo->getGroup();
+            $this->ctime = $fileInfo->getCTime();
+            $this->mtime = $fileInfo->getMTime();
+        }
+
         $this->path = $fileInfo->getPathname();
 
-        try {
-            if ($fileInfo->getRealPath()) {
-                $this->perms = $fileInfo->getPerms();
-                $this->size = $fileInfo->getSize();
-                $this->owner = $fileInfo->getOwner();
-                $this->group = $fileInfo->getGroup();
-                $this->ctime = $fileInfo->getCTime();
-                $this->mtime = $fileInfo->getMTime();
-                $this->realpath = $fileInfo->getRealPath();
-            }
+        $this->is_dir = $fileInfo->isDir();
+        $this->is_file = $fileInfo->isFile();
+        $this->is_link = $fileInfo->isLink();
 
-            $this->is_dir = $fileInfo->isDir();
-            $this->is_file = $fileInfo->isFile();
-            $this->is_link = $fileInfo->isLink();
-
-            if ($this->is_link) {
-                $this->linktarget = $fileInfo->getLinkTarget();
-            }
-        } catch (RuntimeException $e) {
-            if (false === \strpos($e->getMessage(), ' open_basedir ')) {
-                throw $e;
-            }
+        if ($this->is_link) {
+            $this->linktarget = $fileInfo->getLinkTarget();
         }
 
         switch ($this->perms & 0xF000) {
@@ -159,38 +150,28 @@ class SplFileInfoRepresentation extends Representation
         }
     }
 
-    public function getLabel(): string
+    public function getLabel()
     {
-        if ($size = $this->getSize()) {
-            return $this->typename.' ('.$size.')';
-        }
-
-        return $this->typename;
+        return $this->typename.' ('.$this->getSize().')';
     }
 
-    public function getSize(): ?string
+    public function getSize()
     {
         if ($this->size) {
             $size = Utils::getHumanReadableBytes($this->size);
 
             return \round($size['value'], 2).$size['unit'];
         }
-
-        return null;
     }
 
-    public function getMTime(): ?string
+    public function getMTime()
     {
-        if (null !== $this->mtime) {
-            $year = \date('Y', $this->mtime);
+        $year = \date('Y', $this->mtime);
 
-            if ($year !== \date('Y')) {
-                return \date('M d Y', $this->mtime);
-            }
-
-            return \date('M d H:i', $this->mtime);
+        if ($year !== \date('Y')) {
+            return \date('M d Y', $this->mtime);
         }
 
-        return null;
+        return \date('M d H:i', $this->mtime);
     }
 }

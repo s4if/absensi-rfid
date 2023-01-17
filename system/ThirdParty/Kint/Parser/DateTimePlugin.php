@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,19 +29,19 @@ use DateTime;
 use Kint\Zval\DateTimeValue;
 use Kint\Zval\Value;
 
-class DateTimePlugin extends AbstractPlugin
+class DateTimePlugin extends Plugin
 {
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['object'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (!$var instanceof DateTime) {
             return;

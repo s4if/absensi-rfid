@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -30,12 +28,12 @@ namespace Kint\Renderer\Rich;
 use Kint\Zval\Representation\Representation;
 use Kint\Zval\Representation\SourceRepresentation;
 
-class SourcePlugin extends AbstractPlugin implements TabPluginInterface
+class SourcePlugin extends Plugin implements TabPluginInterface
 {
-    public function renderTab(Representation $r): ?string
+    public function renderTab(Representation $r)
     {
         if (!($r instanceof SourceRepresentation) || empty($r->source)) {
-            return null;
+            return;
         }
 
         $source = $r->source;
@@ -77,7 +75,5 @@ class SourcePlugin extends AbstractPlugin implements TabPluginInterface
 
             return '<div><pre class="kint-source"'.$data.' style="counter-reset: kint-l '.((int) \key($source) - 1).';">'.$output.'</pre></div><div></div>';
         }
-
-        return null;
     }
 }

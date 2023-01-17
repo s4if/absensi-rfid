@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,7 +29,7 @@ use Kint\Zval\Representation\Representation;
 use Kint\Zval\Value;
 use Traversable;
 
-class IteratorPlugin extends AbstractPlugin
+class IteratorPlugin extends Plugin
 {
     /**
      * List of classes and interfaces to blacklist.
@@ -50,17 +48,17 @@ class IteratorPlugin extends AbstractPlugin
         'SplFileObject',
     ];
 
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['object'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (!$var instanceof Traversable) {
             return;

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -29,7 +27,7 @@ namespace Kint\Parser;
 
 use Kint\Zval\Value;
 
-class TimestampPlugin extends AbstractPlugin
+class TimestampPlugin extends Plugin
 {
     public static $blacklist = [
         2147483648,
@@ -38,17 +36,17 @@ class TimestampPlugin extends AbstractPlugin
         1073741823,
     ];
 
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['string', 'integer'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (\is_string($var) && !\ctype_digit($var)) {
             return;

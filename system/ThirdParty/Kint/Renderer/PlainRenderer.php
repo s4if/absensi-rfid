@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -63,62 +61,64 @@ class PlainRenderer extends TextRenderer
     public static $always_pre_render = false;
 
     protected $force_pre_render = false;
+    protected $pre_render;
 
     public function __construct()
     {
         parent::__construct();
-        $this->setForcePreRender(self::$always_pre_render);
+
+        $this->pre_render = self::$needs_pre_render;
+
+        if (self::$always_pre_render) {
+            $this->setPreRender(true);
+        }
     }
 
-    public function setCallInfo(array $info): void
+    public function setCallInfo(array $info)
     {
         parent::setCallInfo($info);
 
         if (\in_array('@', $this->call_info['modifiers'], true)) {
-            $this->setForcePreRender(true);
+            $this->setPreRender(true);
         }
     }
 
-    public function setStatics(array $statics): void
+    public function setStatics(array $statics)
     {
         parent::setStatics($statics);
 
         if (!empty($statics['return'])) {
-            $this->setForcePreRender(true);
+            $this->setPreRender(true);
         }
     }
 
-    public function setForcePreRender(bool $force_pre_render): void
+    public function setPreRender($pre_render)
     {
-        $this->force_pre_render = $force_pre_render;
+        $this->pre_render = $pre_render;
+        $this->force_pre_render = true;
     }
 
-    public function getForcePreRender(): bool
+    public function getPreRender()
     {
-        return $this->force_pre_render;
+        return $this->pre_render;
     }
 
-    public function shouldPreRender(): bool
-    {
-        return $this->getForcePreRender() || self::$needs_pre_render;
-    }
-
-    public function colorValue(string $string): string
+    public function colorValue($string)
     {
         return '<i>'.$string.'</i>';
     }
 
-    public function colorType(string $string): string
+    public function colorType($string)
     {
         return '<b>'.$string.'</b>';
     }
 
-    public function colorTitle(string $string): string
+    public function colorTitle($string)
     {
         return '<u>'.$string.'</u>';
     }
 
-    public function renderTitle(Value $o): string
+    public function renderTitle(Value $o)
     {
         if (self::$disable_utf8) {
             return $this->utf8ToHtmlentity(parent::renderTitle($o));
@@ -127,11 +127,11 @@ class PlainRenderer extends TextRenderer
         return parent::renderTitle($o);
     }
 
-    public function preRender(): string
+    public function preRender()
     {
         $output = '';
 
-        if ($this->shouldPreRender()) {
+        if ($this->pre_render) {
             foreach (self::$pre_render_sources as $type => $values) {
                 $contents = '';
                 foreach ($values as $v) {
@@ -155,7 +155,7 @@ class PlainRenderer extends TextRenderer
             }
 
             // Don't pre-render on every dump
-            if (!$this->getForcePreRender()) {
+            if (!$this->force_pre_render) {
                 self::$needs_pre_render = false;
             }
         }
@@ -163,7 +163,7 @@ class PlainRenderer extends TextRenderer
         return $output.'<div class="kint-plain">';
     }
 
-    public function postRender(): string
+    public function postRender()
     {
         if (self::$disable_utf8) {
             return $this->utf8ToHtmlentity(parent::postRender()).'</div>';
@@ -172,7 +172,7 @@ class PlainRenderer extends TextRenderer
         return parent::postRender().'</div>';
     }
 
-    public function ideLink(string $file, int $line): string
+    public function ideLink($file, $line)
     {
         $path = $this->escape(Kint::shortenPath($file)).':'.$line;
         $ideLink = Kint::getIdeLink($file, $line);
@@ -190,7 +190,7 @@ class PlainRenderer extends TextRenderer
         return '<a '.$class.'href="'.$this->escape($ideLink).'">'.$path.'</a>';
     }
 
-    public function escape(string $string, $encoding = false): string
+    public function escape($string, $encoding = false)
     {
         if (false === $encoding) {
             $encoding = BlobValue::detectEncoding($string);
@@ -212,7 +212,7 @@ class PlainRenderer extends TextRenderer
         return $string;
     }
 
-    protected function utf8ToHtmlentity(string $string): string
+    protected function utf8ToHtmlentity($string)
     {
         return \str_replace(
             ['┌', '═', '┐', '│', '└', '─', '┘'],
@@ -221,12 +221,12 @@ class PlainRenderer extends TextRenderer
         );
     }
 
-    protected static function renderJs(): string
+    protected static function renderJs()
     {
         return \file_get_contents(KINT_DIR.'/resources/compiled/shared.js').\file_get_contents(KINT_DIR.'/resources/compiled/plain.js');
     }
 
-    protected static function renderCss(): string
+    protected static function renderCss()
     {
         if (\file_exists(KINT_DIR.'/resources/compiled/'.self::$theme)) {
             return \file_get_contents(KINT_DIR.'/resources/compiled/'.self::$theme);

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -33,21 +31,21 @@ use Kint\Zval\Representation\Representation;
 use Kint\Zval\Value;
 use ReflectionClass;
 
-class ClassMethodsPlugin extends AbstractPlugin
+class ClassMethodsPlugin extends Plugin
 {
     private static $cache = [];
 
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['object'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         $class = \get_class($var);
 
@@ -80,10 +78,10 @@ class ClassMethodsPlugin extends AbstractPlugin
                     $method->setAccessPathFrom($o);
                 }
 
-                if ($method->owner_class !== $class && $d = $method->getRepresentation('method_definition')) {
-                    $d = clone $d;
-                    $d->inherited = true;
-                    $method->replaceRepresentation($d);
+                if ($method->owner_class !== $class && $ds = $method->getRepresentation('docstring')) {
+                    $ds = clone $ds;
+                    $ds->class = $method->owner_class;
+                    $method->replaceRepresentation($ds);
                 }
 
                 $rep->contents[] = $method;
@@ -93,7 +91,7 @@ class ClassMethodsPlugin extends AbstractPlugin
         }
     }
 
-    private static function sort(MethodValue $a, MethodValue $b): int
+    private static function sort(MethodValue $a, MethodValue $b)
     {
         $sort = ((int) $a->static) - ((int) $b->static);
         if ($sort) {

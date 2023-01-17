@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -29,9 +27,9 @@ namespace Kint\Renderer\Rich;
 
 use Kint\Zval\Value;
 
-class DepthLimitPlugin extends AbstractPlugin implements ValuePluginInterface
+class DepthLimitPlugin extends Plugin implements ValuePluginInterface
 {
-    public function renderValue(Value $o): string
+    public function renderValue(Value $o)
     {
         return '<dl>'.$this->renderLockedHeader($o, '<var>Depth Limit</var>').'</dl>';
     }

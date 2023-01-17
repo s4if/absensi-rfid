@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -42,7 +40,7 @@ class DateTimeValue extends InstanceValue
         $this->dt = clone $dt;
     }
 
-    public function getValueShort(): string
+    public function getValueShort()
     {
         $stamp = $this->dt->format('Y-m-d H:i:s');
         if ((int) ($micro = $this->dt->format('u'))) {

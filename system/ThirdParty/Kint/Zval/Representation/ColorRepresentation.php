@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,15 +29,15 @@ use InvalidArgumentException;
 
 class ColorRepresentation extends Representation
 {
-    public const COLOR_NAME = 1;
-    public const COLOR_HEX_3 = 2;
-    public const COLOR_HEX_6 = 3;
-    public const COLOR_RGB = 4;
-    public const COLOR_RGBA = 5;
-    public const COLOR_HSL = 6;
-    public const COLOR_HSLA = 7;
-    public const COLOR_HEX_4 = 8;
-    public const COLOR_HEX_8 = 9;
+    const COLOR_NAME = 1;
+    const COLOR_HEX_3 = 2;
+    const COLOR_HEX_6 = 3;
+    const COLOR_RGB = 4;
+    const COLOR_RGBA = 5;
+    const COLOR_HSL = 6;
+    const COLOR_HSLA = 7;
+    const COLOR_HEX_4 = 8;
+    const COLOR_HEX_8 = 9;
 
     public static $color_map = [
         'aliceblue' => 'f0f8ff',
@@ -203,7 +201,7 @@ class ColorRepresentation extends Representation
     public $implicit_label = true;
     public $hints = ['color'];
 
-    public function __construct(string $value)
+    public function __construct($value)
     {
         parent::__construct('Color');
 
@@ -211,7 +209,7 @@ class ColorRepresentation extends Representation
         $this->setValues($value);
     }
 
-    public function getColor(?int $variant = null): ?string
+    public function getColor($variant = null)
     {
         if (!$variant) {
             $variant = $this->variant;
@@ -222,8 +220,8 @@ class ColorRepresentation extends Representation
                 $hex = \sprintf('%02x%02x%02x', $this->r, $this->g, $this->b);
                 $hex_alpha = \sprintf('%02x%02x%02x%02x', $this->r, $this->g, $this->b, \round($this->a * 0xFF));
 
-                return \array_search($hex, self::$color_map, true) ?: \array_search($hex_alpha, self::$color_map, true) ?: null;
-            case self::COLOR_HEX_3:
+                return \array_search($hex, self::$color_map, true) ?: \array_search($hex_alpha, self::$color_map, true);
+           case self::COLOR_HEX_3:
                 if (0 === $this->r % 0x11 && 0 === $this->g % 0x11 && 0 === $this->b % 0x11) {
                     return \sprintf(
                         '#%1X%1X%1X',
@@ -233,7 +231,7 @@ class ColorRepresentation extends Representation
                     );
                 }
 
-                return null;
+                return false;
             case self::COLOR_HEX_6:
                 return \sprintf('#%02X%02X%02X', $this->r, $this->g, $this->b);
             case self::COLOR_RGB:
@@ -266,16 +264,16 @@ class ColorRepresentation extends Representation
                     );
                 }
 
-                return null;
+                return false;
 
             case self::COLOR_HEX_8:
                 return \sprintf('#%02X%02X%02X%02X', $this->r, $this->g, $this->b, \round($this->a * 0xFF));
         }
 
-        return null;
+        return false;
     }
 
-    public function hasAlpha(?int $variant = null): bool
+    public function hasAlpha($variant = null)
     {
         if (null === $variant) {
             $variant = $this->variant;
@@ -296,7 +294,7 @@ class ColorRepresentation extends Representation
         }
     }
 
-    protected function setValues(string $value): void
+    protected function setValues($value)
     {
         $value = \strtolower(\trim($value));
         // Find out which variant of color input it is
@@ -332,7 +330,7 @@ class ColorRepresentation extends Representation
         }
     }
 
-    protected function setValuesFromHex(string $hex): ?int
+    protected function setValuesFromHex($hex)
     {
         if (!\ctype_xdigit($hex)) {
             return null;
@@ -378,7 +376,7 @@ class ColorRepresentation extends Representation
         return $variant;
     }
 
-    protected function setValuesFromFunction(string $value): ?int
+    protected function setValuesFromFunction($value)
     {
         if (!\preg_match('/^((?:rgb|hsl)a?)\\s*\\(([0-9\\.%,\\s\\/\\-]+)\\)$/i', $value, $match)) {
             return null;
@@ -427,7 +425,7 @@ class ColorRepresentation extends Representation
             }
         }
 
-        /** @psalm-var non-empty-array<array-key, float> $params Psalm bug workaround */
+        /** @var non-empty-array<array-key, float> $params Psalm bug workaround */
         switch ($variant) {
             case self::COLOR_RGBA:
             case self::COLOR_RGB:
@@ -455,7 +453,7 @@ class ColorRepresentation extends Representation
             $params = self::hslToRgb($params[0], $params[1], $params[2]);
         }
 
-        [$this->r, $this->g, $this->b] = $params;
+        list($this->r, $this->g, $this->b) = $params;
 
         return $variant;
     }
@@ -469,7 +467,7 @@ class ColorRepresentation extends Representation
      *
      * @return int[] RGB array
      */
-    public static function hslToRgb(float $h, float $s, float $l): array
+    public static function hslToRgb($h, $s, $l)
     {
         if (\min($h, $s, $l) < 0) {
             throw new InvalidArgumentException('The parameters for hslToRgb should be no less than 0');
@@ -496,13 +494,13 @@ class ColorRepresentation extends Representation
     /**
      * Converts RGB to HSL. Color inversion of previous black magic is white magic?
      *
-     * @param float $red   Red
-     * @param float $green Green
-     * @param float $blue  Blue
+     * @param float|int $red   Red
+     * @param float|int $green Green
+     * @param float|int $blue  Blue
      *
      * @return float[] HSL array
      */
-    public static function rgbToHsl(float $red, float $green, float $blue): array
+    public static function rgbToHsl($red, $green, $blue)
     {
         if (\min($red, $green, $blue) < 0) {
             throw new InvalidArgumentException('The parameters for rgbToHsl should be no less than 0');
@@ -519,8 +517,8 @@ class ColorRepresentation extends Representation
         $L = ($clrMax + $clrMin) / 510;
 
         if (0 == $deltaMax) {
-            $H = 0.0;
-            $S = 0.0;
+            $H = 0;
+            $S = 0;
         } else {
             if (0.5 > $L) {
                 $S = $deltaMax / ($clrMax + $clrMin);
@@ -543,17 +541,21 @@ class ColorRepresentation extends Representation
 
         return [
             \fmod($H * 360, 360),
-            $S * 100,
-            $L * 100,
+            (float) ($S * 100),
+            (float) ($L * 100),
         ];
     }
 
     /**
      * Helper function for hslToRgb. Even blacker magic.
      *
+     * @param float $m1
+     * @param float $m2
+     * @param float $hue
+     *
      * @return float Color value
      */
-    private static function hueToRgb(float $m1, float $m2, float $hue): float
+    private static function hueToRgb($m1, $m2, $hue)
     {
         $hue = ($hue < 0) ? $hue + 1 : (($hue > 1) ? $hue - 1 : $hue);
         if ($hue * 6 < 1) {

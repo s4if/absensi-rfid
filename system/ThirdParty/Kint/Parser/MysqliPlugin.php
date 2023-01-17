@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -28,17 +26,17 @@ declare(strict_types=1);
 namespace Kint\Parser;
 
 use Kint\Zval\Value;
-use mysqli;
+use Mysqli;
 use ReflectionClass;
 use Throwable;
 
 /**
- * Adds support for mysqli object parsing.
+ * Adds support for Mysqli object parsing.
  *
  * Due to the way mysqli is implemented in PHP, this will cause
- * warnings on certain mysqli objects if screaming is enabled.
+ * warnings on certain Mysqli objects if screaming is enabled.
  */
-class MysqliPlugin extends AbstractPlugin
+class MysqliPlugin extends Plugin
 {
     // These 'properties' are actually globals
     protected $always_readable = [
@@ -70,30 +68,28 @@ class MysqliPlugin extends AbstractPlugin
         'warning_count' => true,
     ];
 
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['object'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_COMPLETE;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
-        if (!$var instanceof mysqli) {
+        if (!$var instanceof Mysqli) {
             return;
         }
 
-        /** @psalm-var ?string $var->sqlstate */
         try {
             $connected = \is_string(@$var->sqlstate);
         } catch (Throwable $t) {
             $connected = false;
         }
 
-        /** @psalm-var ?string $var->client_info */
         try {
             $empty = !$connected && \is_string(@$var->client_info);
         } catch (Throwable $t) { // @codeCoverageIgnore
@@ -143,9 +139,9 @@ class MysqliPlugin extends AbstractPlugin
             // @codeCoverageIgnoreEnd
         }
 
-        // PHP81 returns an empty array when casting a mysqli instance
+        // PHP81 returns an empty array when casting a Mysqli instance
         if (KINT_PHP81) {
-            $r = new ReflectionClass(mysqli::class);
+            $r = new ReflectionClass(Mysqli::class);
 
             $basepropvalues = [];
 
@@ -167,7 +163,7 @@ class MysqliPlugin extends AbstractPlugin
 
                 $child = new Value();
                 $child->depth = $o->depth + 1;
-                $child->owner_class = mysqli::class;
+                $child->owner_class = Mysqli::class;
                 $child->operator = Value::OPERATOR_OBJECT;
                 $child->name = $pname;
 
@@ -179,7 +175,7 @@ class MysqliPlugin extends AbstractPlugin
                     $child->access = Value::ACCESS_PRIVATE; // @codeCoverageIgnore
                 }
 
-                // We only do base mysqli properties so we don't need to worry about complex names
+                // We only do base Mysqli properties so we don't need to worry about complex names
                 if ($this->parser->childHasPath($o, $child)) {
                     $child->access_path .= $o->access_path.'->'.$child->name;
                 }

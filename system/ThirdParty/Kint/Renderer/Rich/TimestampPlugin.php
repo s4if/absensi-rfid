@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,14 +29,14 @@ use DateTime;
 use DateTimeZone;
 use Kint\Zval\Representation\Representation;
 
-class TimestampPlugin extends AbstractPlugin implements TabPluginInterface
+class TimestampPlugin extends Plugin implements TabPluginInterface
 {
-    public function renderTab(Representation $r): ?string
+    public function renderTab(Representation $r)
     {
-        if ($dt = DateTime::createFromFormat('U', (string) $r->contents)) {
+        $dt = DateTime::createFromFormat('U', $r->contents);
+
+        if ($dt) {
             return '<pre>'.$dt->setTimeZone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s T').'</pre>';
         }
-
-        return null;
     }
 }

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -33,7 +31,7 @@ use Kint\Zval\SimpleXMLElementValue;
 use Kint\Zval\Value;
 use SimpleXMLElement;
 
-class SimpleXMLElementPlugin extends AbstractPlugin
+class SimpleXMLElementPlugin extends Plugin
 {
     /**
      * Show all properties and methods.
@@ -42,17 +40,17 @@ class SimpleXMLElementPlugin extends AbstractPlugin
      */
     public static $verbose = false;
 
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['object'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (!$var instanceof SimpleXMLElement) {
             return;
@@ -125,9 +123,7 @@ class SimpleXMLElementPlugin extends AbstractPlugin
             }
         }
 
-        if ($a->contents) {
-            $x->addRepresentation($a, 0);
-        }
+        $x->addRepresentation($a, 0);
 
         // Children
         $c = new Representation('Children');
@@ -197,14 +193,14 @@ class SimpleXMLElementPlugin extends AbstractPlugin
 
                 $s = $this->parser->parse($value, $base_obj);
                 $srep = $s->getRepresentation('contents');
-                $svalrep = $s->value && 'contents' == $s->value->getName() ? $s->value : null;
+                $svalrep = $s->value && 'contents' == $s->value->getName() ? $s : null;
 
                 if ($srep || $svalrep) {
                     $x->setIsStringValue(true);
                     $x->value = $srep ?: $svalrep;
 
                     if ($srep) {
-                        $x->replaceRepresentation($srep, 0);
+                        $x->replaceRepresentation($x->value, 0);
                     }
                 }
 

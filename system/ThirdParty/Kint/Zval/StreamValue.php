@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -39,10 +37,10 @@ class StreamValue extends ResourceValue
         $this->stream_meta = $meta;
     }
 
-    public function getValueShort(): ?string
+    public function getValueShort()
     {
         if (empty($this->stream_meta['uri'])) {
-            return null;
+            return;
         }
 
         $uri = $this->stream_meta['uri'];

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,5 +29,8 @@ use Kint\Zval\Value;
 
 interface ValuePluginInterface extends PluginInterface
 {
-    public function renderValue(Value $o): ?string;
+    /**
+     * @return null|string
+     */
+    public function renderValue(Value $o);
 }

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -30,7 +28,7 @@ namespace Kint\Parser;
 use Kint\Zval\Representation\Representation;
 use Kint\Zval\Value;
 
-class Base64Plugin extends AbstractPlugin
+class Base64Plugin extends Plugin
 {
     /**
      * The minimum length before a string will be considered for base64 decoding.
@@ -46,17 +44,17 @@ class Base64Plugin extends AbstractPlugin
      */
     public static $min_length_soft = 50;
 
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['string'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (\strlen($var) < self::$min_length_hard || \strlen($var) % 4) {
             return;

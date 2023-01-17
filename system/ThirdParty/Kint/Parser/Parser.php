@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -35,7 +33,6 @@ use Kint\Zval\Representation\Representation;
 use Kint\Zval\ResourceValue;
 use Kint\Zval\Value;
 use ReflectionObject;
-use ReflectionProperty;
 use stdClass;
 use TypeError;
 
@@ -54,12 +51,12 @@ class Parser
      *
      * While a plugin's getTriggers may return any of these
      */
-    public const TRIGGER_NONE = 0;
-    public const TRIGGER_BEGIN = 1;
-    public const TRIGGER_SUCCESS = 2;
-    public const TRIGGER_RECURSION = 4;
-    public const TRIGGER_DEPTH_LIMIT = 8;
-    public const TRIGGER_COMPLETE = 14;
+    const TRIGGER_NONE = 0;
+    const TRIGGER_BEGIN = 1;
+    const TRIGGER_SUCCESS = 2;
+    const TRIGGER_RECURSION = 4;
+    const TRIGGER_DEPTH_LIMIT = 8;
+    const TRIGGER_COMPLETE = 14;
 
     protected $caller_class;
     protected $depth_limit = 0;
@@ -69,12 +66,12 @@ class Parser
     protected $plugins = [];
 
     /**
-     * @param int     $depth_limit Maximum depth to parse data
-     * @param ?string $caller      Caller class name
+     * @param int         $depth_limit Maximum depth to parse data
+     * @param null|string $caller      Caller class name
      */
-    public function __construct(int $depth_limit = 0, ?string $caller = null)
+    public function __construct($depth_limit = 0, $caller = null)
     {
-        $this->marker = "kint\0".\random_bytes(16);
+        $this->marker = \uniqid("kint\0", true);
 
         $this->depth_limit = $depth_limit;
         $this->caller_class = $caller;
@@ -82,15 +79,17 @@ class Parser
 
     /**
      * Set the caller class.
+     *
+     * @param null|string $caller Caller class name
      */
-    public function setCallerClass(?string $caller = null): void
+    public function setCallerClass($caller = null)
     {
         $this->noRecurseCall();
 
         $this->caller_class = $caller;
     }
 
-    public function getCallerClass(): ?string
+    public function getCallerClass()
     {
         return $this->caller_class;
     }
@@ -98,16 +97,16 @@ class Parser
     /**
      * Set the depth limit.
      *
-     * @param int $depth_limit Maximum depth to parse data, 0 for none
+     * @param int $depth_limit Maximum depth to parse data
      */
-    public function setDepthLimit(int $depth_limit = 0): void
+    public function setDepthLimit($depth_limit = 0)
     {
         $this->noRecurseCall();
 
         $this->depth_limit = $depth_limit;
     }
 
-    public function getDepthLimit(): int
+    public function getDepthLimit()
     {
         return $this->depth_limit;
     }
@@ -115,10 +114,12 @@ class Parser
     /**
      * Parses a variable into a Kint object structure.
      *
-     * @param mixed &$var The input variable
-     * @param Value $o    The base object
+     * @param mixed $var The input variable
+     * @param Value $o   The base object
+     *
+     * @return Value
      */
-    public function parse(&$var, Value $o): Value
+    public function parse(&$var, Value $o)
     {
         $o->type = \strtolower(\gettype($var));
 
@@ -147,7 +148,7 @@ class Parser
         }
     }
 
-    public function addPlugin(PluginInterface $p): bool
+    public function addPlugin(Plugin $p)
     {
         if (!$types = $p->getTypes()) {
             return false;
@@ -179,17 +180,17 @@ class Parser
         return true;
     }
 
-    public function clearPlugins(): void
+    public function clearPlugins()
     {
         $this->plugins = [];
     }
 
-    public function haltParse(): void
+    public function haltParse()
     {
         $this->parse_break = true;
     }
 
-    public function childHasPath(InstanceValue $parent, Value $child): bool
+    public function childHasPath(InstanceValue $parent, Value $child)
     {
         if ('__PHP_Incomplete_Class' === $parent->classname) {
             return false;
@@ -232,14 +233,14 @@ class Parser
      *
      * @return array Array with recursion marker removed
      */
-    public function getCleanArray(array $array): array
+    public function getCleanArray(array $array)
     {
         unset($array[$this->marker]);
 
         return $array;
     }
 
-    protected function noRecurseCall(): void
+    protected function noRecurseCall()
     {
         $bt = \debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS);
 
@@ -258,10 +259,7 @@ class Parser
         }
     }
 
-    /**
-     * @param null|bool|float|int &$var
-     */
-    private function parseGeneric(&$var, Value $o): Value
+    private function parseGeneric(&$var, Value $o)
     {
         $rep = new Representation('Contents');
         $rep->contents = $var;
@@ -277,10 +275,12 @@ class Parser
     /**
      * Parses a string into a Kint BlobValue structure.
      *
-     * @param string &$var The input variable
-     * @param Value  $o    The base object
+     * @param string $var The input variable
+     * @param Value  $o   The base object
+     *
+     * @return Value
      */
-    private function parseString(string &$var, Value $o): Value
+    private function parseString(&$var, Value $o)
     {
         $string = new BlobValue();
         $string->transplant($o);
@@ -302,10 +302,12 @@ class Parser
     /**
      * Parses an array into a Kint object structure.
      *
-     * @param array &$var The input variable
-     * @param Value $o    The base object
+     * @param array $var The input variable
+     * @param Value $o   The base object
+     *
+     * @return Value
      */
-    private function parseArray(array &$var, Value $o): Value
+    private function parseArray(array &$var, Value $o)
     {
         $array = new Value();
         $array->transplant($o);
@@ -393,10 +395,12 @@ class Parser
     /**
      * Parses an object into a Kint InstanceValue structure.
      *
-     * @param object &$var The input variable
-     * @param Value  $o    The base object
+     * @param object $var The input variable
+     * @param Value  $o   The base object
+     *
+     * @return Value
      */
-    private function parseObject(&$var, Value $o): Value
+    private function parseObject(&$var, Value $o)
     {
         $hash = \spl_object_hash($var);
         $values = (array) $var;
@@ -406,10 +410,6 @@ class Parser
         $object->classname = \get_class($var);
         $object->spl_object_hash = $hash;
         $object->size = \count($values);
-
-        if (KINT_PHP72) {
-            $object->spl_object_id = \spl_object_id($var);
-        }
 
         if (isset($this->object_hashes[$hash])) {
             $object->hints[] = 'recursion';
@@ -439,16 +439,8 @@ class Parser
 
         $rep = new Representation('Properties');
 
-        $readonly = [];
-
-        // Reflection is both slower and more painful to use than array casting
-        // We only use it to identify readonly and uninitialized properties
         if (KINT_PHP74 && '__PHP_Incomplete_Class' != $object->classname) {
             $rprops = $reflector->getProperties();
-
-            while ($reflector = $reflector->getParentClass()) {
-                $rprops = \array_merge($rprops, $reflector->getProperties(ReflectionProperty::IS_PRIVATE));
-            }
 
             foreach ($rprops as $rprop) {
                 if ($rprop->isStatic()) {
@@ -456,17 +448,6 @@ class Parser
                 }
 
                 $rprop->setAccessible(true);
-
-                if (KINT_PHP81 && $rprop->isReadOnly()) {
-                    if ($rprop->isPublic()) {
-                        $readonly[$rprop->getName()] = true;
-                    } elseif ($rprop->isProtected()) {
-                        $readonly["\0*\0".$rprop->getName()] = true;
-                    } elseif ($rprop->isPrivate()) {
-                        $readonly["\0".$rprop->getDeclaringClass()->getName()."\0".$rprop->getName()] = true;
-                    }
-                }
-
                 if ($rprop->isInitialized($var)) {
                     continue;
                 }
@@ -479,7 +460,6 @@ class Parser
                 $child->owner_class = $rprop->getDeclaringClass()->getName();
                 $child->operator = Value::OPERATOR_OBJECT;
                 $child->name = $rprop->getName();
-                $child->readonly = KINT_PHP81 && $rprop->isReadOnly();
 
                 if ($rprop->isPublic()) {
                     $child->access = Value::ACCESS_PUBLIC;
@@ -519,11 +499,8 @@ class Parser
             $child->owner_class = $object->classname;
             $child->operator = Value::OPERATOR_OBJECT;
             $child->access = Value::ACCESS_PUBLIC;
-            if (isset($readonly[$key])) {
-                $child->readonly = true;
-            }
 
-            $split_key = \explode("\0", (string) $key, 3);
+            $split_key = \explode("\0", $key, 3);
 
             if (3 === \count($split_key) && '' === $split_key[0]) {
                 $child->name = $split_key[2];
@@ -577,10 +554,12 @@ class Parser
     /**
      * Parses a resource into a Kint ResourceValue structure.
      *
-     * @param resource &$var The input variable
-     * @param Value    $o    The base object
+     * @param resource $var The input variable
+     * @param Value    $o   The base object
+     *
+     * @return Value
      */
-    private function parseResource(&$var, Value $o): Value
+    private function parseResource(&$var, Value $o)
     {
         $resource = new ResourceValue();
         $resource->transplant($o);
@@ -594,10 +573,12 @@ class Parser
     /**
      * Parses a closed resource into a Kint object structure.
      *
-     * @param mixed &$var The input variable
-     * @param Value $o    The base object
+     * @param mixed $var The input variable
+     * @param Value $o   The base object
+     *
+     * @return Value
      */
-    private function parseResourceClosed(&$var, Value $o): Value
+    private function parseResourceClosed(&$var, Value $o)
     {
         $o->type = 'resource (closed)';
         $this->applyPlugins($var, $o, self::TRIGGER_SUCCESS);
@@ -608,17 +589,17 @@ class Parser
     /**
      * Applies plugins for an object type.
      *
-     * @param mixed &$var    variable
+     * @param mixed $var     variable
      * @param Value $o       Kint object parsed so far
      * @param int   $trigger The trigger to check for the plugins
      *
      * @return bool Continue parsing
      */
-    private function applyPlugins(&$var, Value &$o, int $trigger): bool
+    private function applyPlugins(&$var, Value &$o, $trigger)
     {
         $break_stash = $this->parse_break;
 
-        /** @psalm-var bool */
+        /** @var bool Psalm bug workaround */
         $this->parse_break = false;
 
         $plugins = [];

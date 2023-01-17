@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -29,10 +27,18 @@ namespace Kint\Renderer\Text;
 
 use Kint\Zval\Value;
 
-class ArrayLimitPlugin extends AbstractPlugin
+class ArrayLimitPlugin extends Plugin
 {
-    public function render(Value $o): string
+    public function render(Value $o)
     {
-        return $this->renderLockedHeader($o, 'ARRAY LIMIT');
+        $out = '';
+
+        if (0 == $o->depth) {
+            $out .= $this->renderer->colorTitle($this->renderer->renderTitle($o)).PHP_EOL;
+        }
+
+        $out .= $this->renderer->renderHeader($o).' '.$this->renderer->colorValue('ARRAY LIMIT').PHP_EOL;
+
+        return $out;
     }
 }

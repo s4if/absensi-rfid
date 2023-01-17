@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -33,26 +31,72 @@ use Kint\Zval\ClosureValue;
 use Kint\Zval\MethodValue;
 use Kint\Zval\Value;
 
-class CallablePlugin extends ClosurePlugin
+class CallablePlugin extends Plugin implements ValuePluginInterface
 {
     protected static $method_cache = [];
 
-    protected $closure_plugin = null;
-
-    public function renderValue(Value $o): ?string
+    public function renderValue(Value $o)
     {
         if ($o instanceof MethodValue) {
             return $this->renderMethod($o);
         }
 
         if ($o instanceof ClosureValue) {
-            return parent::renderValue($o);
+            return $this->renderClosure($o);
         }
 
-        return null;
+        return $this->renderCallable($o);
     }
 
-    protected function renderMethod(MethodValue $o): string
+    protected function renderClosure(ClosureValue $o)
+    {
+        $children = $this->renderer->renderChildren($o);
+
+        $header = '';
+
+        if (null !== ($s = $o->getModifiers())) {
+            $header .= '<var>'.$s.'</var> ';
+        }
+
+        if (null !== ($s = $o->getName())) {
+            $header .= '<dfn>'.$this->renderer->escape($s).'('.$this->renderer->escape($o->getParams()).')</dfn>';
+        }
+
+        if (null !== ($s = $o->getValueShort())) {
+            if (RichRenderer::$strlen_max) {
+                $s = Utils::truncateString($s, RichRenderer::$strlen_max);
+            }
+            $header .= ' '.$this->renderer->escape($s);
+        }
+
+        return '<dl>'.$this->renderer->renderHeaderWrapper($o, (bool) \strlen($children), $header).$children.'</dl>';
+    }
+
+    protected function renderCallable(Value $o)
+    {
+        $children = $this->renderer->renderChildren($o);
+
+        $header = '';
+
+        if (null !== ($s = $o->getModifiers())) {
+            $header .= '<var>'.$s.'</var> ';
+        }
+
+        if (null !== ($s = $o->getName())) {
+            $header .= '<dfn>'.$this->renderer->escape($s).'</dfn>';
+        }
+
+        if (null !== ($s = $o->getValueShort())) {
+            if (RichRenderer::$strlen_max) {
+                $s = Utils::truncateString($s, RichRenderer::$strlen_max);
+            }
+            $header .= ' '.$this->renderer->escape($s);
+        }
+
+        return '<dl>'.$this->renderer->renderHeaderWrapper($o, (bool) \strlen($children), $header).$children.'</dl>';
+    }
+
+    protected function renderMethod(MethodValue $o)
     {
         if (!empty(self::$method_cache[$o->owner_class][$o->name])) {
             $children = self::$method_cache[$o->owner_class][$o->name]['children'];

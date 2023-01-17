@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -30,19 +28,19 @@ namespace Kint\Parser;
 use Kint\Zval\Value;
 use SplObjectStorage;
 
-class SplObjectStoragePlugin extends AbstractPlugin
+class SplObjectStoragePlugin extends Plugin
 {
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['object'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_COMPLETE;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (!$var instanceof SplObjectStorage || !($r = $o->getRepresentation('iterator'))) {
             return;

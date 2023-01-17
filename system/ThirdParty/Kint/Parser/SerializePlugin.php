@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -30,7 +28,7 @@ namespace Kint\Parser;
 use Kint\Zval\Representation\Representation;
 use Kint\Zval\Value;
 
-class SerializePlugin extends AbstractPlugin
+class SerializePlugin extends Plugin
 {
     /**
      * Disables automatic unserialization on arrays and objects.
@@ -47,23 +45,19 @@ class SerializePlugin extends AbstractPlugin
      * @var bool
      */
     public static $safe_mode = true;
+    public static $options = [true];
 
-    /**
-     * @var bool|class-string[]
-     */
-    public static $allowed_classes = false;
-
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['string'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         $trimmed = \rtrim($var);
 
@@ -71,11 +65,14 @@ class SerializePlugin extends AbstractPlugin
             return;
         }
 
-        $options = ['allowed_classes' => self::$allowed_classes];
-
         if (!self::$safe_mode || !\in_array($trimmed[0], ['C', 'O', 'a'], true)) {
-            // Suppress warnings on unserializeable variable
-            $data = @\unserialize($trimmed, $options);
+            // Second parameter only supported on PHP 7
+            if (KINT_PHP70) {
+                // Suppress warnings on unserializeable variable
+                $data = @\unserialize($trimmed, self::$options);
+            } else {
+                $data = @\unserialize($trimmed);
+            }
 
             if (false === $data && 'b:0;' !== \substr($trimmed, 0, 4)) {
                 return;
@@ -88,10 +85,12 @@ class SerializePlugin extends AbstractPlugin
 
         if ($o->access_path) {
             $base_obj->access_path = 'unserialize('.$o->access_path;
-            if (true === self::$allowed_classes) {
+            if (!KINT_PHP70 || self::$options === [true]) {
                 $base_obj->access_path .= ')';
+            } elseif (self::$options === [false]) {
+                $base_obj->access_path .= ', false)';
             } else {
-                $base_obj->access_path .= ', '.\var_export($options, true).')';
+                $base_obj->access_path .= ', Serialize::$options)';
             }
         }
 

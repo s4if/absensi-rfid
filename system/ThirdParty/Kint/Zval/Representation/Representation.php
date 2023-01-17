@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -36,7 +34,7 @@ class Representation
 
     protected $name;
 
-    public function __construct(string $label, ?string $name = null)
+    public function __construct($label, $name = null)
     {
         $this->label = $label;
 
@@ -47,7 +45,7 @@ class Representation
         $this->setName($name);
     }
 
-    public function getLabel(): string
+    public function getLabel()
     {
         if (\is_array($this->contents) && \count($this->contents) > 1) {
             return $this->label.' ('.\count($this->contents).')';
@@ -56,17 +54,17 @@ class Representation
         return $this->label;
     }
 
-    public function getName(): string
+    public function getName()
     {
         return $this->name;
     }
 
-    public function setName(string $name): void
+    public function setName($name)
     {
         $this->name = \preg_replace('/[^a-z0-9]+/', '_', \strtolower($name));
     }
 
-    public function labelIsImplicit(): bool
+    public function labelIsImplicit()
     {
         return $this->implicit_label;
     }

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -30,24 +28,24 @@ namespace Kint\Parser;
 use Kint\Zval\Representation\MicrotimeRepresentation;
 use Kint\Zval\Value;
 
-class MicrotimePlugin extends AbstractPlugin
+class MicrotimePlugin extends Plugin
 {
     private static $last = null;
     private static $start = null;
     private static $times = 0;
     private static $group = 0;
 
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['string', 'double'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (0 !== $o->depth) {
             return;
@@ -65,9 +63,9 @@ class MicrotimePlugin extends AbstractPlugin
                 return;
             }
 
-            $sec = (int) \floor($var);
+            $sec = \floor($var);
             $usec = $var - $sec;
-            $usec = (int) \floor($usec * 1000000);
+            $usec = \floor($usec * 1000000);
         }
 
         $time = $sec + ($usec / 1000000);
@@ -97,7 +95,7 @@ class MicrotimePlugin extends AbstractPlugin
         $o->hints[] = 'microtime';
     }
 
-    public static function clean(): void
+    public static function clean()
     {
         self::$last = null;
         self::$start = null;

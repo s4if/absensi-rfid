@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -27,9 +25,6 @@ declare(strict_types=1);
 
 namespace Kint\Zval;
 
-/**
- * @psalm-type Encoding string|false
- */
 class BlobValue extends Value
 {
     /**
@@ -74,22 +69,18 @@ class BlobValue extends Value
      * windows-125x and iso-8859-x which have practically undetectable
      * differences because they use every single byte available.
      *
-     * This is *NOT* reliable and should not be trusted implicitly. Since it
-     * works by triggering and suppressing conversion warnings, your error
-     * handler may complain.
-     *
-     * As with char_encodings, the order of the charsets is significant.
+     * This is *NOT* reliable and should not be trusted implicitly. As
+     * with char_encodings, the order of the charsets is significant.
      *
      * This depends on the iconv extension
      */
     public static $legacy_encodings = [];
 
     public $type = 'string';
-    /** @psalm-var Encoding */
     public $encoding = false;
     public $hints = ['string'];
 
-    public function getType(): ?string
+    public function getType()
     {
         if (false === $this->encoding) {
             return 'binary '.$this->type;
@@ -102,16 +93,14 @@ class BlobValue extends Value
         return $this->encoding.' '.$this->type;
     }
 
-    public function getValueShort(): ?string
+    public function getValueShort()
     {
         if ($rep = $this->value) {
             return '"'.$rep->contents.'"';
         }
-
-        return null;
     }
 
-    public function transplant(Value $old): void
+    public function transplant(Value $old)
     {
         parent::transplant($old);
 
@@ -120,12 +109,7 @@ class BlobValue extends Value
         }
     }
 
-    /**
-     * @psalm-param Encoding $encoding
-     *
-     * @param mixed $encoding
-     */
-    public static function strlen(string $string, $encoding = false): int
+    public static function strlen($string, $encoding = false)
     {
         if (\function_exists('mb_strlen')) {
             if (false === $encoding) {
@@ -140,12 +124,7 @@ class BlobValue extends Value
         return \strlen($string);
     }
 
-    /**
-     * @psalm-param Encoding $encoding
-     *
-     * @param mixed $encoding
-     */
-    public static function substr(string $string, int $start, ?int $length = null, $encoding = false): string
+    public static function substr($string, $start, $length = null, $encoding = false)
     {
         if (\function_exists('mb_substr')) {
             if (false === $encoding) {
@@ -162,13 +141,10 @@ class BlobValue extends Value
             return '';
         }
 
-        return \substr($string, $start, $length ?? PHP_INT_MAX);
+        return \substr($string, $start, isset($length) ? $length : PHP_INT_MAX);
     }
 
-    /**
-     * @psalm-return Encoding
-     */
-    public static function detectEncoding(string $string)
+    public static function detectEncoding($string)
     {
         if (\function_exists('mb_detect_encoding')) {
             if ($ret = \mb_detect_encoding($string, self::$char_encodings, true)) {
@@ -185,8 +161,6 @@ class BlobValue extends Value
 
         if (\function_exists('iconv')) {
             foreach (self::$legacy_encodings as $encoding) {
-                // Iconv detection works by triggering
-                // "Detected an illegal character in input string" warnings
                 if (@\iconv($encoding, $encoding, $string) === $string) {
                     return $encoding;
                 }

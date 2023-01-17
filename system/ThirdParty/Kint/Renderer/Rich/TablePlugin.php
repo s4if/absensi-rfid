@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,31 +29,25 @@ use Kint\Renderer\RichRenderer;
 use Kint\Utils;
 use Kint\Zval\Representation\Representation;
 
-class TablePlugin extends AbstractPlugin implements TabPluginInterface
+class TablePlugin extends Plugin implements TabPluginInterface
 {
     public static $respect_str_length = true;
 
-    public function renderTab(Representation $r): string
+    public function renderTab(Representation $r)
     {
         $out = '<pre><table><thead><tr><th></th>';
 
         $firstrow = \reset($r->contents);
 
         foreach ($firstrow->value->contents as $field) {
-            $out .= '<th>';
-            if (null !== ($s = $field->getName())) {
-                $out .= $this->renderer->escape($s);
-            }
-            $out .= '</th>';
+            $out .= '<th>'.$this->renderer->escape($field->name).'</th>';
         }
 
         $out .= '</tr></thead><tbody>';
 
         foreach ($r->contents as $row) {
             $out .= '<tr><th>';
-            if (null !== ($s = $row->getName())) {
-                $out .= $this->renderer->escape($s);
-            }
+            $out .= $this->renderer->escape($row->name);
             $out .= '</th>';
 
             foreach ($row->value->contents as $field) {

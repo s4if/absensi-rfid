@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -27,6 +25,8 @@ declare(strict_types=1);
 
 namespace Kint\Zval;
 
+use Exception;
+use InvalidArgumentException;
 use Throwable;
 
 class ThrowableValue extends InstanceValue
@@ -34,19 +34,21 @@ class ThrowableValue extends InstanceValue
     public $message;
     public $hints = ['object', 'throwable'];
 
-    public function __construct(Throwable $throw)
+    public function __construct($throw)
     {
+        if (!$throw instanceof Exception && (!KINT_PHP70 || !$throw instanceof Throwable)) {
+            throw new InvalidArgumentException('ThrowableValue must be constructed with a Throwable');
+        }
+
         parent::__construct();
 
         $this->message = $throw->getMessage();
     }
 
-    public function getValueShort(): ?string
+    public function getValueShort()
     {
         if (\strlen($this->message)) {
             return '"'.$this->message.'"';
         }
-
-        return null;
     }
 }

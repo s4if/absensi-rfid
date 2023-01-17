@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,7 +29,7 @@ use InvalidArgumentException;
 use Kint\Utils;
 use Kint\Zval\Value;
 
-class ArrayLimitPlugin extends AbstractPlugin
+class ArrayLimitPlugin extends Plugin
 {
     /**
      * Maximum size of arrays before limiting.
@@ -54,17 +52,17 @@ class ArrayLimitPlugin extends AbstractPlugin
      */
     public static $numeric_only = true;
 
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['array'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_BEGIN;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (self::$limit >= self::$trigger) {
             throw new InvalidArgumentException('ArrayLimitPlugin::$limit can not be lower than ArrayLimitPlugin::$trigger');
@@ -92,7 +90,7 @@ class ArrayLimitPlugin extends AbstractPlugin
         $base->depth = $depth - 1;
         $obj = $this->parser->parse($var, $base);
 
-        if ('array' != $obj->type) {
+        if (!$obj instanceof Value || 'array' != $obj->type) {
             return; // @codeCoverageIgnore
         }
 
@@ -117,7 +115,7 @@ class ArrayLimitPlugin extends AbstractPlugin
         $this->parser->haltParse();
     }
 
-    protected function recalcDepthLimit(Value $o): void
+    protected function recalcDepthLimit(Value $o)
     {
         $hintkey = \array_search('depth_limit', $o->hints, true);
         if (false !== $hintkey) {

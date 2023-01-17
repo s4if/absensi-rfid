@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -30,19 +28,19 @@ namespace Kint\Parser;
 use Kint\Zval\BlobValue;
 use Kint\Zval\Value;
 
-class BinaryPlugin extends AbstractPlugin
+class BinaryPlugin extends Plugin
 {
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['string'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (!$o instanceof BlobValue || !\in_array($o->encoding, ['ASCII', 'UTF-8'], true)) {
             $o->value->hints[] = 'binary';

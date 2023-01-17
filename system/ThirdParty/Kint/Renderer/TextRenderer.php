@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -28,47 +26,37 @@ declare(strict_types=1);
 namespace Kint\Renderer;
 
 use Kint\Kint;
-use Kint\Parser;
-use Kint\Renderer\Text\PluginInterface;
 use Kint\Utils;
 use Kint\Zval\InstanceValue;
 use Kint\Zval\Value;
 
-/**
- * @psalm-import-type Encoding from \Kint\Zval\BlobValue
- * @psalm-import-type PluginMap from AbstractRenderer
- */
-class TextRenderer extends AbstractRenderer
+class TextRenderer extends Renderer
 {
     /**
-     * TextRenderer plugins should implement PluginInterface.
-     *
-     * @psalm-var PluginMap
+     * TextRenderer plugins should be instances of Kint\Renderer\Text\Plugin.
      */
     public static $plugins = [
-        'array_limit' => Text\ArrayLimitPlugin::class,
-        'blacklist' => Text\BlacklistPlugin::class,
-        'depth_limit' => Text\DepthLimitPlugin::class,
-        'enum' => Text\EnumPlugin::class,
-        'microtime' => Text\MicrotimePlugin::class,
-        'recursion' => Text\RecursionPlugin::class,
-        'trace' => Text\TracePlugin::class,
+        'array_limit' => 'Kint\\Renderer\\Text\\ArrayLimitPlugin',
+        'blacklist' => 'Kint\\Renderer\\Text\\BlacklistPlugin',
+        'depth_limit' => 'Kint\\Renderer\\Text\\DepthLimitPlugin',
+        'microtime' => 'Kint\\Renderer\\Text\\MicrotimePlugin',
+        'recursion' => 'Kint\\Renderer\\Text\\RecursionPlugin',
+        'trace' => 'Kint\\Renderer\\Text\\TracePlugin',
+        'enum' => 'Kint\\Renderer\\Text\\EnumPlugin',
     ];
 
     /**
      * Parser plugins must be instanceof one of these or
      * it will be removed for performance reasons.
-     *
-     * @psalm-var class-string[]
      */
     public static $parser_plugin_whitelist = [
-        Parser\ArrayLimitPlugin::class,
-        Parser\ArrayObjectPlugin::class,
-        Parser\BlacklistPlugin::class,
-        Parser\EnumPlugin::class,
-        Parser\MicrotimePlugin::class,
-        Parser\StreamPlugin::class,
-        Parser\TracePlugin::class,
+        'Kint\\Parser\\ArrayLimitPlugin',
+        'Kint\\Parser\\ArrayObjectPlugin',
+        'Kint\\Parser\\BlacklistPlugin',
+        'Kint\\Parser\\MicrotimePlugin',
+        'Kint\\Parser\\StreamPlugin',
+        'Kint\\Parser\\TracePlugin',
+        'Kint\\Parser\\EnumPlugin',
     ];
 
     /**
@@ -119,7 +107,7 @@ class TextRenderer extends AbstractRenderer
         $this->indent_width = self::$default_indent;
     }
 
-    public function render(Value $o): string
+    public function render(Value $o)
     {
         if ($plugin = $this->getPlugin(self::$plugins, $o->hints)) {
             $output = $plugin->render($o);
@@ -140,7 +128,7 @@ class TextRenderer extends AbstractRenderer
         return $out;
     }
 
-    public function renderNothing(): string
+    public function renderNothing()
     {
         if (self::$decorations) {
             return $this->colorTitle(
@@ -151,7 +139,7 @@ class TextRenderer extends AbstractRenderer
         return $this->colorTitle('No argument').PHP_EOL;
     }
 
-    public function boxText(string $text, int $width): string
+    public function boxText($text, $width)
     {
         $out = '┌'.\str_repeat('─', $width - 2).'┐'.PHP_EOL;
 
@@ -167,7 +155,7 @@ class TextRenderer extends AbstractRenderer
         return $out;
     }
 
-    public function renderTitle(Value $o): string
+    public function renderTitle(Value $o)
     {
         $name = (string) $o->getName();
 
@@ -178,7 +166,7 @@ class TextRenderer extends AbstractRenderer
         return Utils::truncateString($name, $this->header_width);
     }
 
-    public function renderHeader(Value $o): string
+    public function renderHeader(Value $o)
     {
         $output = [];
 
@@ -201,13 +189,7 @@ class TextRenderer extends AbstractRenderer
                 $s = '&'.$s;
             }
 
-            $s = $this->colorType($this->escape($s));
-
-            if ($o instanceof InstanceValue && isset($o->spl_object_id)) {
-                $s .= '#'.((int) $o->spl_object_id);
-            }
-
-            $output[] = $s;
+            $output[] = $this->colorType($this->escape($s));
         }
 
         if (null !== ($s = $o->getSize())) {
@@ -224,7 +206,7 @@ class TextRenderer extends AbstractRenderer
         return \str_repeat(' ', $o->depth * $this->indent_width).\implode(' ', $output);
     }
 
-    public function renderChildren(Value $o): string
+    public function renderChildren(Value $o)
     {
         if ('array' === $o->type) {
             $output = ' [';
@@ -262,22 +244,22 @@ class TextRenderer extends AbstractRenderer
         return $output;
     }
 
-    public function colorValue(string $string): string
+    public function colorValue($string)
     {
         return $string;
     }
 
-    public function colorType(string $string): string
+    public function colorType($string)
     {
         return $string;
     }
 
-    public function colorTitle(string $string): string
+    public function colorTitle($string)
     {
         return $string;
     }
 
-    public function postRender(): string
+    public function postRender()
     {
         if (self::$decorations) {
             $output = \str_repeat('═', $this->header_width);
@@ -296,7 +278,7 @@ class TextRenderer extends AbstractRenderer
         return $this->colorTitle($output.$this->calledFrom().PHP_EOL);
     }
 
-    public function filterParserPlugins(array $plugins): array
+    public function filterParserPlugins(array $plugins)
     {
         $return = [];
 
@@ -312,22 +294,17 @@ class TextRenderer extends AbstractRenderer
         return $return;
     }
 
-    public function ideLink(string $file, int $line): string
+    public function ideLink($file, $line)
     {
         return $this->escape(Kint::shortenPath($file)).':'.$line;
     }
 
-    /**
-     * @psalm-param Encoding $encoding
-     *
-     * @param mixed $encoding
-     */
-    public function escape(string $string, $encoding = false): string
+    public function escape($string, $encoding = false)
     {
         return $string;
     }
 
-    protected function calledFrom(): string
+    protected function calledFrom()
     {
         $output = '';
 
@@ -338,9 +315,7 @@ class TextRenderer extends AbstractRenderer
             );
         }
 
-        if (
-            isset($this->call_info['callee']['function']) &&
-            (
+        if (isset($this->call_info['callee']['function']) && (
                 !empty($this->call_info['callee']['class']) ||
                 !\in_array(
                     $this->call_info['callee']['function'],
@@ -350,30 +325,28 @@ class TextRenderer extends AbstractRenderer
             )
         ) {
             $output .= ' [';
-            $output .= $this->call_info['callee']['class'] ?? '';
-            $output .= $this->call_info['callee']['type'] ?? '';
+            if (isset($this->call_info['callee']['class'])) {
+                $output .= $this->call_info['callee']['class'];
+            }
+            if (isset($this->call_info['callee']['type'])) {
+                $output .= $this->call_info['callee']['type'];
+            }
             $output .= $this->call_info['callee']['function'].'()]';
         }
 
         return $output;
     }
 
-    /**
-     * @psalm-param PluginMap $plugins
-     * @psalm-param string[] $hints
-     */
-    protected function getPlugin(array $plugins, array $hints): ?PluginInterface
+    protected function getPlugin(array $plugins, array $hints)
     {
         if ($plugins = $this->matchPlugins($plugins, $hints)) {
             $plugin = \end($plugins);
 
-            if (!isset($this->plugin_objs[$plugin]) && \is_subclass_of($plugin, PluginInterface::class)) {
+            if (!isset($this->plugin_objs[$plugin])) {
                 $this->plugin_objs[$plugin] = new $plugin($this);
             }
 
             return $this->plugin_objs[$plugin];
         }
-
-        return null;
     }
 }

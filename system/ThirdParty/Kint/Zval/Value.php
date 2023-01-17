@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,23 +29,22 @@ use Kint\Zval\Representation\Representation;
 
 class Value
 {
-    public const ACCESS_NONE = null;
-    public const ACCESS_PUBLIC = 1;
-    public const ACCESS_PROTECTED = 2;
-    public const ACCESS_PRIVATE = 3;
+    const ACCESS_NONE = null;
+    const ACCESS_PUBLIC = 1;
+    const ACCESS_PROTECTED = 2;
+    const ACCESS_PRIVATE = 3;
 
-    public const OPERATOR_NONE = null;
-    public const OPERATOR_ARRAY = 1;
-    public const OPERATOR_OBJECT = 2;
-    public const OPERATOR_STATIC = 3;
+    const OPERATOR_NONE = null;
+    const OPERATOR_ARRAY = 1;
+    const OPERATOR_OBJECT = 2;
+    const OPERATOR_STATIC = 3;
 
     public $name;
     public $type;
-    public $readonly = false;
     public $static = false;
     public $const = false;
     public $access = self::ACCESS_NONE;
-    public $owner_class = null;
+    public $owner_class;
     public $access_path;
     public $operator = self::OPERATOR_NONE;
     public $reference = false;
@@ -62,7 +59,7 @@ class Value
     {
     }
 
-    public function addRepresentation(Representation $rep, ?int $pos = null): bool
+    public function addRepresentation(Representation $rep, $pos = null)
     {
         if (isset($this->representations[$rep->getName()])) {
             return false;
@@ -81,7 +78,7 @@ class Value
         return true;
     }
 
-    public function replaceRepresentation(Representation $rep, ?int $pos = null): void
+    public function replaceRepresentation(Representation $rep, $pos = null)
     {
         if (null === $pos) {
             $this->representations[$rep->getName()] = $rep;
@@ -91,45 +88,40 @@ class Value
         }
     }
 
-    /**
-     * @param Representation|string $rep
-     */
-    public function removeRepresentation($rep): void
+    public function removeRepresentation($rep)
     {
         if ($rep instanceof Representation) {
             unset($this->representations[$rep->getName()]);
-        } else { // String
+        } elseif (\is_string($rep)) {
             unset($this->representations[$rep]);
         }
     }
 
-    public function getRepresentation(string $name): ?Representation
+    public function getRepresentation($name)
     {
-        return $this->representations[$name] ?? null;
+        if (isset($this->representations[$name])) {
+            return $this->representations[$name];
+        }
     }
 
-    public function getRepresentations(): array
+    public function getRepresentations()
     {
         return $this->representations;
     }
 
-    public function clearRepresentations(): void
+    public function clearRepresentations()
     {
         $this->representations = [];
     }
 
-    public function getType(): ?string
+    public function getType()
     {
         return $this->type;
     }
 
-    public function getModifiers(): ?string
+    public function getModifiers()
     {
         $out = $this->getAccess();
-
-        if ($this->readonly) {
-            $out .= ' readonly';
-        }
 
         if ($this->const) {
             $out .= ' const';
@@ -142,11 +134,9 @@ class Value
         if (null !== $out && \strlen($out)) {
             return \ltrim($out);
         }
-
-        return null;
     }
 
-    public function getAccess(): ?string
+    public function getAccess()
     {
         switch ($this->access) {
             case self::ACCESS_PRIVATE:
@@ -156,20 +146,14 @@ class Value
             case self::ACCESS_PUBLIC:
                 return 'public';
         }
-
-        return null;
     }
 
-    public function getName(): ?string
+    public function getName()
     {
-        if (isset($this->name)) {
-            return (string) $this->name;
-        }
-
-        return null;
+        return $this->name;
     }
 
-    public function getOperator(): ?string
+    public function getOperator()
     {
         switch ($this->operator) {
             case self::OPERATOR_ARRAY:
@@ -179,20 +163,14 @@ class Value
             case self::OPERATOR_STATIC:
                 return '::';
         }
-
-        return null;
     }
 
-    public function getSize(): ?string
+    public function getSize()
     {
-        if (isset($this->size)) {
-            return (string) $this->size;
-        }
-
-        return null;
+        return $this->size;
     }
 
-    public function getValueShort(): ?string
+    public function getValueShort()
     {
         if ($rep = $this->value) {
             if ('boolean' === $this->type) {
@@ -200,25 +178,22 @@ class Value
             }
 
             if ('integer' === $this->type || 'double' === $this->type) {
-                return (string) $rep->contents;
+                return $rep->contents;
             }
         }
-
-        return null;
     }
 
-    public function getAccessPath(): ?string
+    public function getAccessPath()
     {
         return $this->access_path;
     }
 
-    public function transplant(self $old): void
+    public function transplant(Value $old)
     {
         $this->name = $old->name;
         $this->size = $old->size;
         $this->access_path = $old->access_path;
         $this->access = $old->access;
-        $this->readonly = $old->readonly;
         $this->static = $old->static;
         $this->const = $old->const;
         $this->type = $old->type;
@@ -233,8 +208,13 @@ class Value
 
     /**
      * Creates a new basic object with a name and access path.
+     *
+     * @param null|string $name
+     * @param null|string $access_path
+     *
+     * @return \Kint\Zval\Value
      */
-    public static function blank(?string $name = null, ?string $access_path = null): self
+    public static function blank($name = null, $access_path = null)
     {
         $o = new self();
         $o->name = $name;
@@ -243,7 +223,7 @@ class Value
         return $o;
     }
 
-    public static function sortByAccess(self $a, self $b): int
+    public static function sortByAccess(Value $a, Value $b)
     {
         static $sorts = [
             self::ACCESS_PUBLIC => 1,
@@ -255,12 +235,14 @@ class Value
         return $sorts[$a->access] - $sorts[$b->access];
     }
 
-    public static function sortByName(self $a, self $b): int
+    public static function sortByName(Value $a, Value $b)
     {
-        if ((string) $a->name === (string) $b->name) {
+        $ret = \strnatcasecmp($a->name, $b->name);
+
+        if (0 === $ret) {
             return (int) \is_int($b->name) - (int) \is_int($a->name);
         }
 
-        return \strnatcasecmp((string) $a->name, (string) $b->name);
+        return $ret;
     }
 }

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -30,12 +28,9 @@ namespace Kint;
 use Kint\Zval\BlobValue;
 use ReflectionNamedType;
 use ReflectionType;
-use UnexpectedValueException;
 
 /**
  * A collection of utility methods. Should all be static methods with no dependencies.
- *
- * @psalm-import-type Encoding from BlobValue
  */
 final class Utils
 {
@@ -53,7 +48,7 @@ final class Utils
      *
      * @return array Human readable value and unit
      */
-    public static function getHumanReadableBytes(int $value): array
+    public static function getHumanReadableBytes($value)
     {
         static $unit = ['B', 'KB', 'MB', 'GB', 'TB'];
 
@@ -87,24 +82,24 @@ final class Utils
         ];
     }
 
-    public static function isSequential(array $array): bool
+    public static function isSequential(array $array)
     {
         return \array_keys($array) === \range(0, \count($array) - 1);
     }
 
-    public static function isAssoc(array $array): bool
+    public static function isAssoc(array $array)
     {
         return (bool) \count(\array_filter(\array_keys($array), 'is_string'));
     }
 
-    public static function composerGetExtras(string $key = 'kint'): array
+    public static function composerGetExtras($key = 'kint')
     {
+        $extras = [];
+
         if (0 === \strpos(KINT_DIR, 'phar://')) {
             // Only run inside phar file, so skip for code coverage
-            return []; // @codeCoverageIgnore
+            return $extras; // @codeCoverageIgnore
         }
-
-        $extras = [];
 
         $folder = KINT_DIR.'/vendor';
 
@@ -146,7 +141,7 @@ final class Utils
     /**
      * @codeCoverageIgnore
      */
-    public static function composerSkipFlags(): void
+    public static function composerSkipFlags()
     {
         $extras = self::composerGetExtras();
 
@@ -159,7 +154,7 @@ final class Utils
         }
     }
 
-    public static function isTrace(array $trace): bool
+    public static function isTrace(array $trace)
     {
         if (!self::isSequential($trace)) {
             return false;
@@ -200,7 +195,7 @@ final class Utils
         return $file_found;
     }
 
-    public static function traceFrameIsListed(array $frame, array $matches): bool
+    public static function traceFrameIsListed(array $frame, array $matches)
     {
         if (isset($frame['class'])) {
             $called = [\strtolower($frame['class']), \strtolower($frame['function'])];
@@ -211,7 +206,7 @@ final class Utils
         return \in_array($called, $matches, true);
     }
 
-    public static function normalizeAliases(array &$aliases): void
+    public static function normalizeAliases(array &$aliases)
     {
         static $name_regex = '[a-zA-Z_\\x7f-\\xff][a-zA-Z0-9_\\x7f-\\xff]*';
 
@@ -247,13 +242,9 @@ final class Utils
         $aliases = \array_values($aliases);
     }
 
-    /**
-     * @psalm-param Encoding $encoding
-     *
-     * @param mixed $encoding
-     */
-    public static function truncateString(string $input, int $length = PHP_INT_MAX, string $end = '...', $encoding = false): string
+    public static function truncateString($input, $length = PHP_INT_MAX, $end = '...', $encoding = false)
     {
+        $length = (int) $length;
         $endlength = BlobValue::strlen($end);
 
         if ($endlength >= $length) {
@@ -268,25 +259,17 @@ final class Utils
         return $input;
     }
 
-    public static function getTypeString(ReflectionType $type): string
+    public static function getTypeString(ReflectionType $type)
     {
-        // @codeCoverageIgnoreStart
-        // ReflectionType::__toString was deprecated in 7.4 and undeprecated in 8
-        // and toString doesn't correctly show the nullable ? in the type before 8
-        if (!KINT_PHP80) {
-            if (!$type instanceof ReflectionNamedType) {
-                throw new UnexpectedValueException('ReflectionType on PHP 7 must be ReflectionNamedType');
-            }
-
+        if ($type instanceof ReflectionNamedType) {
             $name = $type->getName();
-            if ($type->allowsNull() && 'mixed' !== $name && false === \strpos($name, '|')) {
+            if ($type->allowsNull() && false === \strpos($name, '|')) {
                 $name = '?'.$name;
             }
 
             return $name;
         }
-        // @codeCoverageIgnoreEnd
 
-        return (string) $type;
+        return (string) $type; // @codeCoverageIgnore
     }
 }

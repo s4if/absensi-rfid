@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -41,34 +39,24 @@ class EnumValue extends InstanceValue
         $this->enumval = $enumval;
     }
 
-    public function getValueShort(): ?string
+    public function getValueShort()
     {
         if ($this->enumval instanceof BackedEnum) {
             if (\is_string($this->enumval->value)) {
                 return '"'.$this->enumval->value.'"';
-            }   // Int
-
-            return (string) $this->enumval->value;
-        }
-
-        return null;
-    }
-
-    public function getType(): ?string
-    {
-        if (isset($this->classname)) {
-            if (isset($this->enumval->name)) {
-                return $this->classname.'::'.$this->enumval->name;
             }
-
-            return $this->classname;
+            if (\is_int($this->enumval->value)) {
+                return (string) $this->enumval->value;
+            }
         }
-
-        return null;
     }
 
-    public function getSize(): ?string
+    public function getType()
     {
-        return null;
+        return $this->classname.'::'.$this->enumval->name;
+    }
+
+    public function getSize()
+    {
     }
 }

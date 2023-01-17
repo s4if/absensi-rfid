@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,21 +29,21 @@ use Kint\Zval\Representation\SplFileInfoRepresentation;
 use Kint\Zval\Value;
 use SplFileInfo;
 
-class FsPathPlugin extends AbstractPlugin
+class FsPathPlugin extends Plugin
 {
     public static $blacklist = ['/', '.'];
 
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['string'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (\strlen($var) > 2048) {
             return;

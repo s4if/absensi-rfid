@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -35,7 +33,7 @@ class SourceRepresentation extends Representation
     public $line = 0;
     public $showfilename = false;
 
-    public function __construct(string $filename, int $line, int $padding = 7)
+    public function __construct($filename, $line, $padding = 7)
     {
         parent::__construct('Source');
 
@@ -56,8 +54,10 @@ class SourceRepresentation extends Representation
      * @param string   $filename   Full path to file
      * @param int      $start_line The first line to display (1 based)
      * @param null|int $length     Amount of lines to show
+     *
+     * @return null|array
      */
-    public static function getSource(string $filename, int $start_line = 1, ?int $length = null): ?array
+    public static function getSource($filename, $start_line = 1, $length = null)
     {
         if (!$filename || !\file_exists($filename) || !\is_readable($filename)) {
             return null;

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -50,10 +48,10 @@ class TraceFrameValue extends Value
 
         $this->trace = [
             'function' => $raw_frame['function'],
-            'line' => $raw_frame['line'] ?? null,
-            'file' => $raw_frame['file'] ?? null,
-            'class' => $raw_frame['class'] ?? null,
-            'type' => $raw_frame['type'] ?? null,
+            'line' => isset($raw_frame['line']) ? $raw_frame['line'] : null,
+            'file' => isset($raw_frame['file']) ? $raw_frame['file'] : null,
+            'class' => isset($raw_frame['class']) ? $raw_frame['class'] : null,
+            'type' => isset($raw_frame['type']) ? $raw_frame['type'] : null,
             'object' => null,
             'args' => null,
         ];

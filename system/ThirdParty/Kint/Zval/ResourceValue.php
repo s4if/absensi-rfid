@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -31,7 +29,7 @@ class ResourceValue extends Value
 {
     public $resource_type;
 
-    public function getType(): string
+    public function getType()
     {
         if ($this->resource_type) {
             return $this->resource_type.' resource';
@@ -40,7 +38,7 @@ class ResourceValue extends Value
         return 'resource';
     }
 
-    public function transplant(Value $old): void
+    public function transplant(Value $old)
     {
         parent::transplant($old);
 

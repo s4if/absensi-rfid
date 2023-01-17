@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -30,19 +28,19 @@ namespace Kint\Parser;
 use Kint\Zval\Representation\Representation;
 use Kint\Zval\Value;
 
-class JsonPlugin extends AbstractPlugin
+class JsonPlugin extends Plugin
 {
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['string'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (!isset($var[0]) || ('{' !== $var[0] && '[' !== $var[0])) {
             return;

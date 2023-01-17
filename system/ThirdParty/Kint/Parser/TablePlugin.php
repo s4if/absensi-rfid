@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -30,19 +28,19 @@ namespace Kint\Parser;
 use Kint\Zval\Representation\Representation;
 use Kint\Zval\Value;
 
-class TablePlugin extends AbstractPlugin
+class TablePlugin extends Plugin
 {
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['array'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (empty($o->value->contents)) {
             return;

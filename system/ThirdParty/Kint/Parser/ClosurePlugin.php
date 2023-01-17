@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /*
  * The MIT License (MIT)
  *
@@ -34,19 +32,19 @@ use Kint\Zval\Representation\Representation;
 use Kint\Zval\Value;
 use ReflectionFunction;
 
-class ClosurePlugin extends AbstractPlugin
+class ClosurePlugin extends Plugin
 {
-    public function getTypes(): array
+    public function getTypes()
     {
         return ['object'];
     }
 
-    public function getTriggers(): int
+    public function getTriggers()
     {
         return Parser::TRIGGER_SUCCESS;
     }
 
-    public function parse(&$var, Value &$o, int $trigger): void
+    public function parse(&$var, Value &$o, $trigger)
     {
         if (!$var instanceof Closure) {
             return;
