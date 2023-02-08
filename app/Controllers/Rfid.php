@@ -24,7 +24,7 @@ class Rfid extends BaseController
             $log_date = $log_date->setTimezone($this->tz);
             $current->time = $log_date->format('l, d M Y H:i:s [e]');
             return $this->respond($current);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->failNotFound('rfid belum ada yang masuk');
         }
             
@@ -32,6 +32,8 @@ class Rfid extends BaseController
 
     public function readRfid($device_id)
     {
+        $time = (new \DateTimeImmutable('now'));
+        $time = $time->setTimezone($this->tz);
         // karena perangkatnya sederhana, api-nya yang harus menebak!
         $token = $this->request->getGet('token');
         $rfid = $this->request->getGet('rfid');
@@ -51,10 +53,9 @@ class Rfid extends BaseController
         }
 
         // save rfid
-        $now = new \DateTimeImmutable('now');
         $rfid_data = [
             'rfid'          => $rfid,
-            'updated_at'    => $now->getTimestamp(),
+            'updated_at'    => $time->getTimestamp(),
             'device_id'     => $device_id
         ];
         $rfid_builder = $this->db->table('rfid_tmp');
@@ -62,12 +63,26 @@ class Rfid extends BaseController
 
         // check student
         $student_builder = $this->db->table('students');
-        $student_builder->select('id, nis'); // nis untuk dimasukkan ke log
+        $student_builder->select('id, nis, classroom'); // nis untuk dimasukkan ke log
         $student_builder->where('rfid', $rfid);
         $squery = $student_builder->get();
         $student = $squery->getRow();
         if (is_null($student)) {
             return $this->respondCreated(['msg' => 'rfid saved, not associated with any student']);
+        }
+
+        if ($student->classroom == "GURU") {
+            if (is_null($this->getGuru($student->id, 1800))) {
+                $gsql = "insert into teachers_logs (student_id, logged_at, device_id)"
+                        ." values(:student_id:, :logged_at:, :device_id:);";
+                $gquery = $this->db->query($gsql, [
+                    'student_id'    => $student->id,
+                    'logged_at'     => $time->getTimestamp(),
+                    'device_id'     => $device_id,
+                ]);
+                return $this->respondCreated(['msg' => 'teacher\'s attendance saved']);
+            }
+            return $this->respondCreated(['msg' => "teacher has logged in"]);
         }
 
         // check session
@@ -83,8 +98,6 @@ class Rfid extends BaseController
         if (!is_null($existing_record)) {
             return $this->respondCreated(['msg' => 'rfid saved, already used in this session']);
         }
-        $time = (new \DateTimeImmutable('now'));
-        $time = $time->setTimezone($this->tz);
         $record_data = [
             'student_id'    => $student->id,
             'device_id'     => $device_id,
@@ -95,7 +108,7 @@ class Rfid extends BaseController
         try {
             $att_builder->insert($record_data);
             return $this->respondCreated(['msg' => 'attendance saved']);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->fail('unknown error',400);
         }
 
@@ -113,9 +126,9 @@ class Rfid extends BaseController
         try {
             $builder->update(['rfid' => $rfid], ['nis' => $nis]);
             return $this->respondCreated(['rfid' => $rfid]);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return $this->fail('unknown failure', 400);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return false;
         }
     }
@@ -130,6 +143,38 @@ class Rfid extends BaseController
             ." and deleted_at is null order by criterion_time asc";
         $query = $this->db->query($sql, [$lower_limit, $upper_limit]);
         return $query->getRow();
+    }
+
+    private function getGuru($student_id, $range = 1800)
+    {
+        $current_timestamp = time();
+        $lower_limit = $current_timestamp - $range;
+        $sql = "select * from teachers_logs where student_id = :student_id: and logged_at > :lower_limit: ;";
+        $query = $this->db->query($sql, ['student_id' => $student_id, 'lower_limit' => $lower_limit]);
+        return $query->getRow();
+    }
+
+    public function getAbsenGuru()
+    {
+        $time = (new \DateTimeImmutable('now'));
+        $time = $time->setTimezone($this->tz);
+        $str_date = $time->format('Y-m-d');
+        // kalau dari format string, langsung dikasih timezone-nya!
+        $midnight = (\DateTime::createFromFormat('Y-m-d H:i:s', $str_date." 00:00:00", $this->tz));
+        $lower_limit = $midnight->getTimestamp();
+        $sql = "select s.name as name, l.logged_at as raw_time, s.rfid as rfid"
+                ." from teachers_logs as l join students as s on l.student_id=s.id where l.logged_at"
+                ." > :lower_limit: order by l.logged_at asc;";
+        $query = $this->db->query($sql, ['lower_limit' => $lower_limit]);
+        $data = $query->getResultObject();
+        foreach ($data as &$row) {
+            $r_time = \DateTime::createFromFormat('U', $row->raw_time);
+            $r_time->setTimezone($this->tz);
+            $row->time = $r_time->format("H:i");
+        }
+        unset($row);
+        return $this->respond($data, 200);
+        //return $lower_limit;
     }
 
     public function showAttendance(){

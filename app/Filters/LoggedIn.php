@@ -18,9 +18,7 @@ class LoggedIn implements FilterInterface
      * sent back to the client, allowing for error pages,
      * redirects, etc.
      *
-     * @param RequestInterface $request
      * @param array|null       $arguments
-     *
      * @return mixed
      */
     public function before(RequestInterface $request, $arguments = null)
@@ -38,8 +36,6 @@ class LoggedIn implements FilterInterface
      * to stop execution of other after filters, short of
      * throwing an Exception or Error.
      *
-     * @param RequestInterface  $request
-     * @param ResponseInterface $response
      * @param array|null        $arguments
      *
      * @return mixed

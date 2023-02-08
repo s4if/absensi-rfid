@@ -62,7 +62,7 @@
             <?php if (!is_null($alert)) : ?>
               <div class="row justify-content-center">
                 <div class="col alert alert-<?php echo $alert['type']; ?> alert-dismissible fade show" role="alert">
-                  <?php echo nl2br($alert['msg']); ?>
+                  <?php echo nl2br((string) $alert['msg']); ?>
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
               </div>

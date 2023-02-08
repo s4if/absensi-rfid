@@ -20,7 +20,6 @@
 
       <?php echo $this->renderSection('content');?>
     </div>
-    <script src="<?=base_url()?>/js/jquery-3.6.2.min.js"></script>
     <script src="<?=base_url()?>/js/popper.min.js"></script>
     <script src="<?=base_url()?>/js/bootstrap.bundle.min.js"></script>
     <?php echo $this->renderSection('content_js');?>

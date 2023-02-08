@@ -74,7 +74,7 @@
 
         <p>
             <?php if (ENVIRONMENT !== 'production') : ?>
-                <?= nl2br(esc($message)) ?>
+                <?= nl2br((string) esc($message)) ?>
             <?php else : ?>
                 Sorry! Cannot seem to find the page you were looking for.
             <?php endif ?>

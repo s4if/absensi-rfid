@@ -14,6 +14,8 @@ class Session extends BaseController
     /**
      * Constructor.
      */
+
+    protected $model;
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
         // Do Not Edit This Line
@@ -84,7 +86,7 @@ class Session extends BaseController
             $data->deleted_at = null;
             $res = $this->model->update($slot->id,$data);
             return $this->respondCreated($data);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->failValidationError('simpan error, cek nama!');
         }
     }
@@ -114,7 +116,7 @@ class Session extends BaseController
         try {
             $this->model->update($id,$data);
             return $this->respondCreated([]);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->failNotFound('resource tidak ditemukan');
         }
     }
@@ -124,7 +126,7 @@ class Session extends BaseController
         try {
             $this->model->delete($id);
             return $this->respondDeleted([]);
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->failNotFound('resource tidak ditemukan');
         }
     }
@@ -163,6 +165,36 @@ class Session extends BaseController
         return $this->respond(['data' => $data]);
     }
 
+    public function getAttendacesData($id){
+        $sess = $this->model->find($id);
+        if (is_null($sess)) {
+            return $this->failNotFound('data tidak ditemukan');
+        }
+        $sql = "select students.nis as nis, students.name as name, students.classroom as classroom,"
+            ." att_records.logged_at as timestamp, att_records.id as id from att_records inner join"
+            ." students on att_records.student_id=students.id where att_records.session_id=?"
+            ." order by att_records.logged_at desc;";
+        $aquery = $this->db->query($sql, [$sess->id]);
+        $a_data = $aquery->getResultObject();
+        foreach ($a_data as &$item) {
+            $time = \DateTimeImmutable::createFromFormat('U', $item->timestamp);
+            $time = $time->setTimezone($this->tz);
+            $item->time = $time->format('Y-m-d H:i:s');
+            $item->action = "<button type='button' onclick='del(".$item->id
+            .")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></button>";
+            $item->time_short = $time->format('H:i');
+            $item->comment = "";
+        }
+        unset($item);
+
+        $sql = 'SELECT students.name as name, students.classroom as classroom from students where classroom <> "GURU" and'
+        .' not EXISTS (SELECT 1 from att_records where att_records.session_id=? and att_records.student_id=students.id);';
+        $aquery = $this->db->query($sql,[$id]);
+        $records = $aquery->getResultObject();
+
+        return $this->respond(['a_data' => $a_data, 'n_data' => $records]);
+    }
+
     public function getAttRecord($id){
         $sql = "select students.nis as nis, students.name as name, students.classroom as classroom,"
             ." att_records.logged_at as timestamp, att_records.id as id from att_records inner join"
@@ -194,7 +226,7 @@ class Session extends BaseController
         try {
             $res = $this->db->query($sql,[$id]);
             return ($res)?$this->respondDeleted(['id' => $id]):$this->failNotFound('item tidak ditemukan');
-        } catch (\ErrorException $e) {
+        } catch (\ErrorException) {
             return $this->fail('unknown error', 400);
         }
     }
