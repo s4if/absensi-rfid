@@ -24,7 +24,7 @@
               </div>
               <div class="row mb-3">
                 <div class="btn-group" role="group">
-                  <button type="button" id="guru_btn" class="btn btn-success col">Presensi Guru</button>
+                  <!-- <button type="button" id="guru_btn" class="btn btn-success col">Presensi Guru</button> -->
                   <button type="button" class="col btn btn-dark" id="waktu"></button>
                 </div>
               </div>
