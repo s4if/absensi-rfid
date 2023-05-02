@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use CodeIgniter\API\ResponseTrait;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Excel extends BaseController
@@ -161,5 +161,116 @@ class Excel extends BaseController
         // undelete sessions rawan bikin sesi tidak valid
         $c_query = $this->db->query($sqlc, [$s_timestamp, $e_timestamp, $mode]);
         return $c_query->getRow();
+    }
+
+    public function export()
+    {
+        //$spreadsheet = new Spreadsheet();
+
+        $reader = IOFactory::CreateReader('Xlsx');
+        $spreadsheet = $reader->load(ROOTPATH.'/template_export.xlsx');
+
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $this->writeSheet($sheet);
+
+        $time = new \DateTimeImmutable('now');
+        $sheet->setCellValueByColumnAndRow(3,2,$time->format('Y-m-d'));
+
+        $file_name = 'export_presensi_'.$time->format('Y-m-d');
+        $writer = new Xlsx($spreadsheet);
+        //set header
+        $this->response->setHeader('Content-Type','application/vnd.ms-excel')
+                ->setHeader('Content-Disposition', 'attachment;filename="'.$file_name.'.xlsx"')
+                ->setHeader('Cache-Control', 'max-age=0');
+        $this->response->setBody($writer->save('php://output'));
+        return $this->response;
+    }
+
+    private function writeSheet(&$sheet)
+    {
+        // data
+        $sql = "select * from att_records;";
+        $aquery = $this->db->query($sql);
+        $att_data_raw = $aquery->getResultObject();
+        $att_data = null;
+        foreach ($att_data_raw as $att_item) {
+            $time = \DateTime::createFromFormat('U', $att_item->logged_at);
+            $time->setTimeZone($this->tz);
+            $att_data[$att_item->student_id][$att_item->session_id] = $time->format('H:i:s');
+        }
+        //print_r($att_data);
+        $sql = "select id, nis, name, classroom from students where classroom != 'GURU';";
+        $st_query = $this->db->query($sql);
+        $st_data = $st_query->getResultObject();
+        //print_r($st_data);
+        $sql = "select * from sessions order by criterion_time ASC;";
+        $sess_query = $this->db->query($sql);
+        $sess_data = $sess_query->getResultObject();
+        foreach ($sess_data as &$sess) {
+            $time = \DateTimeImmutable::createFromFormat('U', $sess->criterion_time);
+            $time = $time->setTimezone($this->tz);
+            $sess->timezone = $time->format('e');
+            $sess->date = $time->format('l, j M Y');
+            $sess->time = $time->format('H:i');
+        }
+        unset($sess);// wajib
+        //print_r($sess_data);
+        // end data
+
+        $st_count = count($st_data);
+        $sess_count = count($sess_data);
+
+        for ($i=0; $i < $sess_count; $i++) { 
+            $sheet->setCellValueByColumnAndRow(3+$i,4,$sess_data[$i]->mode);
+            $time = \DateTime::createFromFormat('U', $sess_data[$i]->criterion_time);
+            $time->setTimeZone($this->tz);
+            $sheet->setCellValueByColumnAndRow(3+$i,5,$time->format('d/m/y'));
+        }
+
+        for($i = 0; $i < $st_count; $i++){
+            $sheet->setCellValueByColumnAndRow(2,6+$i,$st_data[$i]->name);
+            if (is_null($att_data)) $att_data = [[]]; 
+            $att_data_sess = (array_key_exists($st_data[$i]->id, $att_data))?$att_data[$st_data[$i]->id]:null;
+            for($j = 0; $j < $sess_count; $j++ ){
+                $isi = 'Tidak Hadir';
+                if (!is_null($att_data_sess)) {
+                    if (array_key_exists($sess_data[$j]->id, $att_data_sess)) {
+                        $isi = $att_data_sess[$sess_data[$j]->id];
+                    }
+                }
+                $sheet->setCellValueByColumnAndRow(3+$j,6+$i,$isi);
+            }
+        }
+    }
+
+    public function data_export() 
+    {
+        $sql = "select * from att_records;";
+        $aquery = $this->db->query($sql);
+        $att_data_raw = $aquery->getResultObject();
+        $att_data = null;
+        foreach ($att_data_raw as $att_item) {
+            $time = \DateTime::createFromFormat('U', $att_item->logged_at);
+            $time->setTimeZone($this->tz);
+            $att_data[$att_item->student_id][$att_item->session_id] = $time->format('H:i:s');
+        }
+        //print_r($att_data);
+        $sql = "select id, nis, name, classroom from students where classroom != 'GURU';";
+        $st_query = $this->db->query($sql);
+        $st_data = $st_query->getResultObject();
+        //print_r($st_data);
+        $sql = "select * from sessions order by criterion_time ASC;";
+        $sess_query = $this->db->query($sql);
+        $sess_data = $sess_query->getResultObject();
+        foreach ($sess_data as &$sess) {
+            $time = \DateTimeImmutable::createFromFormat('U', $sess->criterion_time);
+            $time = $time->setTimezone($this->tz);
+            $sess->timezone = $time->format('e');
+            $sess->date = $time->format('l, j M Y');
+            $sess->time = $time->format('H:i');
+        }
+        unset($sess);// wajib
+        print_r($sess_data);
     }
 }
