@@ -82,7 +82,8 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
 
     // rekap
     // belum jadi
-    $routes->get('rekap',static fn() => "Belum Dibuat");
+    #$routes->get('rekap',static fn() => "Belum Dibuat");
+    $routes->get('rekap', 'Excel::export');
 });
 
 //api call
@@ -95,6 +96,8 @@ $routes->get('presensi/not_yet_attend/(:num)', 'Session::getNotAttend/$1');
 $routes->get('presensi/get_both/(:num)', 'Session::getAttendacesData/$1');
 $routes->get('presensi/absen_guru', 'Rfid::getAbsenGuru');
 //$routes->get('rfid/session', 'Rfid::getSession');
+$routes->get('coba_export', 'Excel::export');
+$routes->get('coba_data', 'Excel::data_export');
 /*
  * --------------------------------------------------------------------
  * Additional Routing
