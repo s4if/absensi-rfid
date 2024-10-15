@@ -1,4 +1,10 @@
-<?php $error_id = uniqid('error', true); ?>
+<?php
+use CodeIgniter\HTTP\Header;
+use Config\Services;
+use CodeIgniter\CodeIgniter;
+
+$errorId = uniqid('error', true);
+?>
 <!doctype html>
 <html>
 <head>
@@ -6,11 +12,11 @@
     <meta name="robots" content="noindex">
 
     <title><?= esc($title) ?></title>
-    <style type="text/css">
+    <style>
         <?= preg_replace('#[\r\n\t ]+#', ' ', file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'debug.css')) ?>
     </style>
 
-    <script type="text/javascript">
+    <script>
         <?= file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'debug.js') ?>
     </script>
 </head>
@@ -18,11 +24,17 @@
 
     <!-- Header -->
     <div class="header">
+        <div class="environment">
+            Displayed at <?= esc(date('H:i:sa')) ?> &mdash;
+            PHP: <?= esc(PHP_VERSION) ?>  &mdash;
+            CodeIgniter: <?= esc(CodeIgniter::CI_VERSION) ?> --
+            Environment: <?= ENVIRONMENT ?>
+        </div>
         <div class="container">
             <h1><?= esc($title), esc($exception->getCode() ? ' #' . $exception->getCode() : '') ?></h1>
             <p>
-                <?= nl2br((string) esc($exception->getMessage())) ?>
-                <a href="https://www.duckduckgo.com/?q=<?= urlencode($title . ' ' . preg_replace('#\'.*\'|".*"#Us', '', (string) $exception->getMessage())) ?>"
+                <?= nl2br(esc($exception->getMessage())) ?>
+                <a href="https://www.duckduckgo.com/?q=<?= urlencode($title . ' ' . preg_replace('#\'.*\'|".*"#Us', '', $exception->getMessage())) ?>"
                    rel="noreferrer" target="_blank">search &rarr;</a>
             </p>
         </div>
@@ -39,6 +51,30 @@
         <?php endif; ?>
     </div>
 
+    <div class="container">
+        <?php
+        $last = $exception;
+
+        while ($prevException = $last->getPrevious()) {
+            $last = $prevException;
+            ?>
+
+    <pre>
+    Caused by:
+    <?= esc($prevException::class), esc($prevException->getCode() ? ' #' . $prevException->getCode() : '') ?>
+
+    <?= nl2br(esc($prevException->getMessage())) ?>
+    <a href="https://www.duckduckgo.com/?q=<?= urlencode($prevException::class . ' ' . preg_replace('#\'.*\'|".*"#Us', '', $prevException->getMessage())) ?>"
+       rel="noreferrer" target="_blank">search &rarr;</a>
+    <?= esc(clean_path($prevException->getFile()) . ':' . $prevException->getLine()) ?>
+    </pre>
+
+        <?php
+        }
+        ?>
+    </div>
+
+    <?php if (defined('SHOW_DEBUG_BACKTRACE') && SHOW_DEBUG_BACKTRACE) : ?>
     <div class="container">
 
         <ul class="tabs" id="tabs">
@@ -61,7 +97,7 @@
                     <li>
                         <p>
                             <!-- Trace info -->
-                            <?php if (isset($row['file']) && is_file($row['file'])) :?>
+                            <?php if (isset($row['file']) && is_file($row['file'])) : ?>
                                 <?php
                                 if (isset($row['function']) && in_array($row['function'], ['include', 'include_once', 'require', 'require_once'], true)) {
                                     echo esc($row['function'] . ' ' . clean_path($row['file']));
@@ -77,16 +113,16 @@
                             <?php if (isset($row['class'])) : ?>
                                 &nbsp;&nbsp;&mdash;&nbsp;&nbsp;<?= esc($row['class'] . $row['type'] . $row['function']) ?>
                                 <?php if (! empty($row['args'])) : ?>
-                                    <?php $args_id = $error_id . 'args' . $index ?>
-                                    ( <a href="#" onclick="return toggle('<?= esc($args_id, 'attr') ?>');">arguments</a> )
-                                    <div class="args" id="<?= esc($args_id, 'attr') ?>">
+                                    <?php $argsId = $errorId . 'args' . $index ?>
+                                    ( <a href="#" onclick="return toggle('<?= esc($argsId, 'attr') ?>');">arguments</a> )
+                                    <div class="args" id="<?= esc($argsId, 'attr') ?>">
                                         <table cellspacing="0">
 
                                         <?php
                                         $params = null;
                                         // Reflection by name is not available for closure function
-                                        if (!str_ends_with((string) $row['function'], '}')) {
-                                            $mirror = isset($row['class']) ? new \ReflectionMethod($row['class'], $row['function']) : new \ReflectionFunction($row['function']);
+                                        if (! str_ends_with($row['function'], '}')) {
+                                            $mirror = isset($row['class']) ? new ReflectionMethod($row['class'], $row['function']) : new ReflectionFunction($row['function']);
                                             $params = $mirror->getParameters();
                                         }
 
@@ -189,7 +225,7 @@
 
             <!-- Request -->
             <div class="content" id="request">
-                <?php $request = \Config\Services::request(); ?>
+                <?php $request = Services::request(); ?>
 
                 <table>
                     <tbody>
@@ -199,7 +235,7 @@
                         </tr>
                         <tr>
                             <td>HTTP Method</td>
-                            <td><?= esc(strtoupper((string) $request->getMethod())) ?></td>
+                            <td><?= esc($request->getMethod()) ?></td>
                         </tr>
                         <tr>
                             <td>IP Address</td>
@@ -270,57 +306,8 @@
 
                 <?php endif; ?>
 
-                <?php $headers = $request->getHeaders(); ?>
+                <?php $headers = $request->headers(); ?>
                 <?php if (! empty($headers)) : ?>
-
-                    <h3>Headers</h3>
-
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Header</th>
-                                <th>Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($headers as $value) : ?>
-                            <?php
-                            if (empty($value)) {
-                                continue;
-                            }
-
-                            if (! is_array($value)) {
-                                $value = [$value];
-                            } ?>
-                            <?php foreach ($value as $h) : ?>
-                                <tr>
-                                    <td><?= esc($h->getName(), 'html') ?></td>
-                                    <td><?= esc($h->getValueLine(), 'html') ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-
-                <?php endif; ?>
-            </div>
-
-            <!-- Response -->
-            <?php
-                $response = \Config\Services::response();
-                $response->setStatusCode(http_response_code());
-            ?>
-            <div class="content" id="response">
-                <table>
-                    <tr>
-                        <td style="width: 15em">Response Status</td>
-                        <td><?= esc($response->getStatusCode() . ' - ' . $response->getReasonPhrase()) ?></td>
-                    </tr>
-                </table>
-
-                <?php $headers = $response->getHeaders(); ?>
-                <?php if (! empty($headers)) : ?>
-                    <?php natsort($headers) ?>
 
                     <h3>Headers</h3>
 
@@ -335,7 +322,64 @@
                         <?php foreach ($headers as $name => $value) : ?>
                             <tr>
                                 <td><?= esc($name, 'html') ?></td>
-                                <td><?= esc($response->getHeaderLine($name), 'html') ?></td>
+                                <td>
+                                <?php
+                                if ($value instanceof Header) {
+                                    echo esc($value->getValueLine(), 'html');
+                                } else {
+                                    foreach ($value as $i => $header) {
+                                        echo ' ('. $i+1 . ') ' . esc($header->getValueLine(), 'html');
+                                    }
+                                }
+                                ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                <?php endif; ?>
+            </div>
+
+            <!-- Response -->
+            <?php
+                $response = Services::response();
+                $response->setStatusCode(http_response_code());
+            ?>
+            <div class="content" id="response">
+                <table>
+                    <tr>
+                        <td style="width: 15em">Response Status</td>
+                        <td><?= esc($response->getStatusCode() . ' - ' . $response->getReasonPhrase()) ?></td>
+                    </tr>
+                </table>
+
+                <?php $headers = $response->headers(); ?>
+                <?php if (! empty($headers)) : ?>
+                    <h3>Headers</h3>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Header</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($headers as $name => $value) : ?>
+                            <tr>
+                                <td><?= esc($name, 'html') ?></td>
+                                <td>
+                                <?php
+                                if ($value instanceof Header) {
+                                    echo esc($response->getHeaderLine($name), 'html');
+                                } else {
+                                    foreach ($value as $i => $header) {
+                                        echo ' ('. $i+1 . ') ' . esc($header->getValueLine(), 'html');
+                                    }
+                                }
+                                ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
@@ -380,18 +424,7 @@
         </div>  <!-- /tab-content -->
 
     </div> <!-- /container -->
-
-    <div class="footer">
-        <div class="container">
-
-            <p>
-                Displayed at <?= esc(date('H:i:sa')) ?> &mdash;
-                PHP: <?= esc(PHP_VERSION) ?>  &mdash;
-                CodeIgniter: <?= esc(\CodeIgniter\CodeIgniter::CI_VERSION) ?>
-            </p>
-
-        </div>
-    </div>
+    <?php endif; ?>
 
 </body>
 </html>

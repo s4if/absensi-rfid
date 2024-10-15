@@ -175,7 +175,7 @@ class Excel extends BaseController
         $this->writeSheet($sheet);
 
         $time = new \DateTimeImmutable('now');
-        $sheet->setCellValueByColumnAndRow(3,2,$time->format('Y-m-d'));
+        $sheet->setCellValue([3,2],$time->format('Y-m-d'));
 
         $file_name = 'export_presensi_'.$time->format('Y-m-d');
         $writer = new Xlsx($spreadsheet);
@@ -222,14 +222,14 @@ class Excel extends BaseController
         $sess_count = count($sess_data);
 
         for ($i=0; $i < $sess_count; $i++) { 
-            $sheet->setCellValueByColumnAndRow(3+$i,4,$sess_data[$i]->mode);
+            $sheet->setCellValue([3+$i,4],$sess_data[$i]->mode);
             $time = \DateTime::createFromFormat('U', $sess_data[$i]->criterion_time);
             $time->setTimeZone($this->tz);
-            $sheet->setCellValueByColumnAndRow(3+$i,5,$time->format('d/m/y'));
+            $sheet->setCellValue([3+$i,5],$time->format('d/m/y'));
         }
 
         for($i = 0; $i < $st_count; $i++){
-            $sheet->setCellValueByColumnAndRow(2,6+$i,$st_data[$i]->name);
+            $sheet->setCellValue([2,6+$i],$st_data[$i]->name);
             if (is_null($att_data)) $att_data = [[]]; 
             $att_data_sess = (array_key_exists($st_data[$i]->id, $att_data))?$att_data[$st_data[$i]->id]:null;
             for($j = 0; $j < $sess_count; $j++ ){
@@ -239,7 +239,7 @@ class Excel extends BaseController
                         $isi = $att_data_sess[$sess_data[$j]->id];
                     }
                 }
-                $sheet->setCellValueByColumnAndRow(3+$j,6+$i,$isi);
+                $sheet->setCellValue([3+$j,6+$i],$isi);
             }
         }
     }
