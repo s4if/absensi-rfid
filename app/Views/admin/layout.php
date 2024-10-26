@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $title?></title>
-    <link href="<?=base_url()?>/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="<?=base_url()?>/css/bootstrap-icons.css">
+    <link href="<?=base_url()?>css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="<?=base_url()?>css/bootstrap-icons.css">
     <style type="text/css">
       body {
         padding-top: 50px;
@@ -29,7 +29,7 @@
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#passwd_modal">Ganti Password</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="<?=base_url()?>/logout">Logout</a></li>
+                <li><a class="dropdown-item" href="<?=base_url()?>logout">Logout</a></li>
               </ul>
             </li>
           </ul>
@@ -40,19 +40,19 @@
     <div class="row flex-nowrap">
         <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
             <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                <a href="<?=base_url()?>/admin" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <a href="<?=base_url()?>admin" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline bi bi-compass">&nbsp;&nbsp;Beranda</span>
                 </a>
-                <a href="<?=base_url()?>/admin/siswa" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <a href="<?=base_url()?>admin/siswa" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline bi bi-people">&nbsp;&nbsp;Siswa</span>
                 </a>
-                <a href="<?=base_url()?>/admin/sesi" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <a href="<?=base_url()?>admin/sesi" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline bi bi-database-gear">&nbsp;&nbsp;Atur Sesi</span>
                 </a>
-                <a href="<?=base_url()?>/presensi" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <a href="<?=base_url()?>presensi" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline bi bi-person-check">&nbsp;&nbsp;Presensi</span>
                 </a>
-                <a href="<?=base_url()?>/admin/rekap" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <a href="<?=base_url()?>admin/rekap" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline bi bi-clipboard-check">&nbsp;&nbsp;Rekap</span>
                 </a>
             </div>
@@ -104,9 +104,9 @@
 </div>
 <?php echo $this->renderSection('content_modal');?>
     
-<script src="<?=base_url()?>/js/jquery-3.6.2.min.js"></script>
-<script src="<?=base_url()?>/js/popper.min.js"></script>
-<script src="<?=base_url()?>/js/bootstrap.bundle.min.js"></script>
+<script src="<?=base_url()?>js/jquery-3.6.2.min.js"></script>
+<script src="<?=base_url()?>js/popper.min.js"></script>
+<script src="<?=base_url()?>js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript">
 async function ganti_password(){
   let data = {
@@ -114,7 +114,7 @@ async function ganti_password(){
     'new_password': document.getElementById('new_password').value,
     'confirm_password': document.getElementById('confirm_password').value
   };
-  let res2 = await fetch('<?=base_url();?>/admin/ganti_password/', {
+  let res2 = await fetch('<?=base_url();?>admin/ganti_password/', {
     method: 'PUT', // *GET, POST, PUT, DELETE, etc.
     headers: {
       'Content-Type': 'application/json'

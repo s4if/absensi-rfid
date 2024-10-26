@@ -1,16 +1,6 @@
 <?php
 
-namespace Config;
-
-// Create a new instance of our RouteCollection class.
-$routes = Services::routes();
-
-// Load the system's routing file first, so that the app and ENVIRONMENT
-// can override as needed.
-if (is_file(SYSTEMPATH . 'Config/Routes.php')) {
-    require SYSTEMPATH . 'Config/Routes.php';
-}
-
+use CodeIgniter\Router\RouteCollection;
 /*
  * --------------------------------------------------------------------
  * Router Setup
@@ -111,6 +101,3 @@ $routes->get('coba_data', 'Excel::data_export');
  * You will have access to the $routes object within that file without
  * needing to reload it.
  */
-if (is_file(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
-    require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
-}
