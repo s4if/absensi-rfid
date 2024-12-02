@@ -143,7 +143,7 @@ $(document).ready(async () => {
   });
   let tbl_root = document.getElementById('tbl_root');
 
-  document.getElementById('guru_btn').onclick = async () => {
+  /*document.getElementById('guru_btn').onclick = async () => {
     tbl_root.innerHTML = "";
     let response = await fetch('<?=base_url();?>/presensi/absen_guru');
     if (response.ok) {
@@ -158,7 +158,7 @@ $(document).ready(async () => {
     } else {
       alert("error?");
     }
-  };
+  };*/
 
   Promise.all([
     (async () => {

@@ -48,6 +48,16 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     $routes->put('edit_siswa/(:num)', 'Student::update/$1');
     $routes->get('hapus_siswa/(:num)', 'Student::delete/$1');
 
+    // management Device
+    $routes->get('device', 'Device::index');
+    $routes->get('get_device', 'Device::list');
+    $routes->get('get_device/(:num)', 'Device::show/$1');
+    $routes->get('tambah_device', 'Device::new');
+    $routes->post('tambah_device', 'Device::create');
+    $routes->get('edit_device/(:num)', 'Device::edit/$1');
+    $routes->put('edit_device/(:num)', 'Device::update/$1');
+    $routes->get('hapus_device/(:num)', 'Device::delete/$1');
+
     // management rfid
     $routes->put('set_rfid', 'Rfid::setStudentRfid');
     $routes->delete('set_rfid', 'Rfid::setStudentRfid/hapus');
