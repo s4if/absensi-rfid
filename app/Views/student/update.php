@@ -24,8 +24,8 @@
         <div class="mb-3">
         	<label class="form-label">Kelas:</label>
         	<select class="form-select" name="classroom" aria-label="Default select example">
-				<option value="TKJ1" <?= ($student->classroom == 'TKJ1')?"selected":"";?> >11 TKJ1</option>
-				<option value="TKJ2" <?= ($student->classroom == 'TKJ2')?"selected":"";?> >11 TKJ2</option>
+				<option value="TJKT1" <?= ($student->classroom == 'TJKT1')?"selected":"";?> >11 TKJ1</option>
+				<option value="TJKT2" <?= ($student->classroom == 'TJKT2')?"selected":"";?> >11 TKJ2</option>
 			</select> 
         </div>
         <div class="mb-3">

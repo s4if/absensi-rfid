@@ -107,8 +107,8 @@
 			        <div class="mb-3">
 			        	<label class="form-label">Kelas:</label>
 			        	<select class="form-select" id="edit_classroom" name="classroom">
-							<option value="TKJ1">11 TKJ1</option>
-							<option value="TKJ2">11 TKJ2</option>
+							<option value="TJKT1">12 TJKT1</option>
+							<option value="TJKT2">12 TJKT2</option>
 						</select> 
 			        </div>
 				</form>

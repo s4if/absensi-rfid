@@ -62,7 +62,7 @@ class Student extends BaseController
         $student->nis = null;
         $student->name = null;
         $student->gender = "L";
-        $student->classroom = "TKJ1";
+        $student->classroom = "TJKT1";
         $student->rfid = null;
         return view('student/update', [
             'title'     => 'Tambah Siswa',
