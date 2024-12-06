@@ -142,23 +142,7 @@ $(document).ready(async () => {
     'keyboard':true,
   });
   let tbl_root = document.getElementById('tbl_root');
-
-  /*document.getElementById('guru_btn').onclick = async () => {
-    tbl_root.innerHTML = "";
-    let response = await fetch('<?=base_url();?>/presensi/absen_guru');
-    if (response.ok) {
-      data = await response.json();
-      let no = 1;
-      data.forEach(async (row) => {
-        let str_row = "<tr><td>"+no+"</td><td>"+row.name+"</td><td>"+row.time+"</td><td>"+row.rfid+"</td></tr>";
-        tbl_root.insertAdjacentHTML('beforeend', str_row);
-        no++;
-      });
-      mdl_guru.toggle();
-    } else {
-      alert("error?");
-    }
-  };*/
+  let isEmpty = false;
 
   Promise.all([
     (async () => {
@@ -172,6 +156,10 @@ $(document).ready(async () => {
           let time = today.getHours() + ":" + String(today.getMinutes()).padStart(2, '0') 
             + ":" + String(today.getSeconds()).padStart(2, '0');
           document.getElementById('waktu').innerHTML = "last refresh : ["+time+"]";
+          isEmpty = tbl_belum.rows().count() === 0;
+          if (isEmpty) {
+            autrefresh_state = false;
+          }
         }
       }
     })(),

@@ -214,6 +214,7 @@ class Session extends BaseController
 
     public function getNotAttend($id){
         $sql = 'SELECT students.name as name, students.classroom as classroom from students where classroom <> "GURU" and'
+        .' students.deleted_at is NULL and'
         .' not EXISTS (SELECT 1 from att_records where att_records.session_id=? and att_records.student_id=students.id);';
         $aquery = $this->db->query($sql,[$id]);
         $records = $aquery->getResultObject();
