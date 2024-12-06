@@ -51,12 +51,12 @@ $routes->group('admin', ['filter' => 'loggedin'], static function ($routes) {
     // management Device
     $routes->get('device', 'Device::index');
     $routes->get('get_device', 'Device::list');
-    $routes->get('get_device/(:num)', 'Device::show/$1');
+    $routes->get('get_device/(:alphanum)', 'Device::show/$1');
     $routes->get('tambah_device', 'Device::new');
     $routes->post('tambah_device', 'Device::create');
-    $routes->get('edit_device/(:num)', 'Device::edit/$1');
-    $routes->put('edit_device/(:num)', 'Device::update/$1');
-    $routes->get('hapus_device/(:num)', 'Device::delete/$1');
+    $routes->get('edit_device/(:alphanum)', 'Device::edit/$1');
+    $routes->put('edit_device/(:alphanum)', 'Device::update/$1');
+    $routes->get('hapus_device/(:alphanum)', 'Device::delete/$1');
 
     // management rfid
     $routes->put('set_rfid', 'Rfid::setStudentRfid');

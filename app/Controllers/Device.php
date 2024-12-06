@@ -27,8 +27,8 @@ class Device extends BaseController
      */
     public function index()
     {
-        return view('session/index', [
-            'title'     => 'Daftar Sesi',
+        return view('device/index', [
+            'title'     => 'Daftar Perangkat',
             'alert'     => $this->session->alert,
         ]);
     }
@@ -40,9 +40,24 @@ class Device extends BaseController
      *
      * @return ResponseInterface
      */
-    public function show($id = null)
+    public function show($id)
     {
-        //
+        $device = $this->model->find($id);
+        return (is_null($device))?$this->failNotFound('data tidak ditemukan'):$this->respond($device);
+    }
+
+    public function list()
+    {
+        $devices = $this->model->findAll();
+        foreach ($devices as &$device) {
+            $device->action = "<button type='button' onclick='edit(\"".$device->id
+            ."\")' class='btn btn-warning btn-sm'><i class='bi-pencil-fill'></i></button>"
+            ."<button type='button' onclick='del(\"".$device->id
+            ."\")' class='btn btn-danger btn-sm'><i class='bi-x-circle-fill'></i></button>";
+        }
+        unset($device);// wajib
+        $data = ['data' => $devices];
+        return $this->respond($data);
     }
 
     /**
@@ -98,6 +113,21 @@ class Device extends BaseController
      */
     public function delete($id = null)
     {
-        //
+        $res = true;
+        try {
+            $res = $this->model->delete($id);
+        } catch (\ErrorException) {
+            $res = false;
+        }
+        if ($res) {
+            $this->session->setFlashdata('alert', ['type' => 'warning', 'msg' => 'Data Berhasil Dihapus.']);
+            return redirect()->to('/admin/device');
+        } else {
+            $this->session->setFlashdata('alert', [
+                'type' => 'danger', 
+                'msg' => 'Data gagal dihapus!<br>Silahkan cek data lagi!'
+            ]);
+            return redirect()->to('/admin/device');
+        }
     }
 }
