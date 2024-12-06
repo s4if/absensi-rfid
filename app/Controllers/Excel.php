@@ -42,7 +42,7 @@ class Excel extends BaseController
             ." VALUES(:nis:, :name:, :gender:, :classroom:);";
         $sql_update = "update students set name = :name:, gender = :gender:,"
             ." classroom = :classroom:, deleted_at = null where nis = :nis: ;";
-        //$this->db->transStart();
+        $this->db->transStart();
         $debug_data = [];
         for ($row = 5; $row <= $h_row; $row++) {
             $nis = $worksheet->getCell('B'.$row)->getValue();
@@ -62,10 +62,10 @@ class Excel extends BaseController
             $debug_data[] = $data;
             $this->db->query($sql, $data);
         }
-        //$this->db->transComplete();
-        //if ($this->db->transStatus() === false) {
-        //    return $this->failValidationError('data ada yang salah');
-        //}
+        $this->db->transComplete();
+        if ($this->db->transStatus() === false) {
+            return $this->failValidationError('data ada yang salah');
+        }
         //return $this->respondCreated(['msg' => 'file valid, no error']);
         return $this->respond(['debug_data' => $debug_data], 200);
     }
