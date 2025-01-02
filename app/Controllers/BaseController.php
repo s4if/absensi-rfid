@@ -57,6 +57,8 @@ abstract class BaseController extends Controller
 
         $this->session = \Config\Services::session();
         $this->db = \Config\Database::connect();
+        $this->db->query('PRAGMA journal_mode = wal;');
+        $this->db->query('PRAGMA synchronous = NORMAL;');
         $this->tz = new \DateTimeZone('Asia/Jakarta'); //timezone
     }
 }
