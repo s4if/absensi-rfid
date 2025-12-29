@@ -1,68 +1,181 @@
-# CodeIgniter 4 Application Starter
+# RFID Attendance System
 
-## What is CodeIgniter?
+Sistem absensi berbasis RFID untuk manajemen kehadiran siswa dan guru di sekolah menggunakan CodeIgniter 4.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Fitur Utama
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+- **Manajemen Siswa**: Tambah, edit, hapus data siswa dengan pendaftaran kartu RFID
+- **Manajemen Perangkat**: Registrasi perangkat RFID dengan autentikasi token
+- **Manajemen Sesi**: Buat sesi check-in dan check-out untuk pencatatan kehadiran
+- **Pencatatan Kehadiran**: Otomatis via RFID atau manual input
+- **Absensi Guru**: Pelacakan terpisah untuk kehadiran guru
+- **Excel Import/Export**: Impor data siswa dan sesi, ekspor laporan kehadiran
+- **API Perangkat**: Endpoint untuk perangkat RFID mengirim data scan
+- **Panel Admin**: Dashboard admin dengan autentikasi
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## Persyaratan Server
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+- PHP 8.1 atau lebih tinggi dengan ekstensi berikut:
+  - intl
+  - mbstring
+  - json
+  - mysqlnd
+  - libcurl
 
-## Installation & updates
+- MySQL/MariaDB
+- Web server (Apache/Nginx)
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+## Instalasi
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+1. Clone repository:
+```bash
+git clone <repository-url>
+cd absensi-rfid
+```
 
-## Setup
+2. Install dependencies:
+```bash
+composer install
+```
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+3. Setup environment:
+```bash
+cp env .env
+```
 
-## Important Change with index.php
+4. Konfigurasi `.env` sesuai lingkungan Anda:
+```ini
+app.baseURL = 'http://localhost:8080/'
+database.default.hostname = localhost
+database.default.database = absensi_rfid
+database.default.username = root
+database.default.password = password
+database.default.DBDriver = MySQLi
+```
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+5. Konfigurasi web server untuk mengarah ke folder `public/`
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+6. Jalankan migrasi database:
+```bash
+spark migrate
+```
 
-**Please** read the user guide for a better explanation of how CI4 works!
+7. Jalankan seeder (opsional):
+```bash
+spark db:seed Admin
+spark db:seed Student
+spark db:seed Session
+spark db:seed DeviceRfid
+```
 
-## Repository Management
+## Struktur Database
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+### Tabel Utama
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+- **students**: Data siswa (id, nis, name, gender, classroom, rfid)
+- **devices**: Perangkat RFID (id, name, token)
+- **sessions**: Sesi absensi (id, name, mode, criterion_time)
+- **att_records**: Catatan kehadiran (id, student_id, session_id, logged_at, device_id)
+- **teachers_logs**: Log kehadiran guru (id, student_id, logged_at, device_id)
+- **rfid_tmp**: Buffer data RFID terbaru
+- **admins**: Data admin (id, username, password)
 
-## Server Requirements
+## API Endpoint
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+### RFID Device API
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+- **GET** `/rfid/read/{device_id}?token={token}&rfid={rfid}` - Kirim data scan RFID
+- **GET** `/rfid/getCurrent` - Ambil data RFID terbaru
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+### Admin API
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+- **GET/POST** `/admin/*` - Manajemen admin dan dashboard
+- **GET/POST** `/admin/siswa/*` - Manajemen siswa
+- **GET/POST** `/admin/sesi/*` - Manajemen sesi absensi
+- **GET/POST** `/admin/device/*` - Manajemen perangkat
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+### Excel API
+
+- **POST** `/excel/importSiswa` - Impor data siswa dari Excel
+- **POST** `/excel/importSesi` - Impor data sesi dari Excel
+- **GET** `/excel/export` - Ekspor laporan kehadiran
+
+## Penggunaan
+
+### Mendaftarkan Perangkat RFID
+
+1. Buka menu Device di panel admin
+2. Tambah perangkat baru dengan nama dan token unik
+3. Simpan token untuk konfigurasi di perangkat fisik
+
+### Mendaftarkan Siswa
+
+1. Tambah siswa secara manual melalui panel admin atau impor dari Excel
+2. Set kartu RFID dengan menekan tombol "Set RFID" pada daftar siswa
+3. Scan kartu RFID pada perangkat untuk mendaftarkan
+
+### Membuat Sesi Absensi
+
+1. Buka menu Sesi di panel admin
+2. Tambah sesi baru dengan nama, mode (check-in/check-out), dan waktu
+3. Impor batch sesi dari Excel untuk jadwal semester
+
+### Melihat Kehadiran
+
+1. Buka menu Presensi untuk melihat daftar kehadiran per sesi
+2. Klik tombol daftar pada sesi untuk melihat detail
+3. Tambah manual absensi jika diperlukan
+
+### Ekspor Laporan
+
+1. Buka menu Ekspor untuk mengunduh laporan kehadiran dalam format Excel
+2. Laporan berisi semua data kehadiran siswa per sesi
+
+## Template Excel
+
+### Template Impor Siswa
+- Kolom A: No
+- Kolom B: NIS
+- Kolom C: Nama
+- Kolom D: Gender (L/P)
+- Kolom E: Kelas (TJKT1, TJKT2, atau GURU)
+
+### Template Impor Sesi
+- Kolom A: No
+- Kolom B: Tanggal (format YYYY-MM-DD)
+- Kolom C: Waktu Check-In (format HH:mm)
+- Kolom D: Waktu Check-Out (format HH:mm)
+
+## Konfigurasi Timezone
+
+Konfigurasi timezone di file `app/Config/App.php`:
+```php
+public $appTimezone = 'Asia/Jakarta';
+```
+
+## Testing
+
+Jalankan PHPUnit untuk testing:
+```bash
+composer test
+```
+
+## Teknologi yang Digunakan
+
+- **Backend**: PHP 8.1+, CodeIgniter 4.6
+- **Database**: MySQL/MariaDB
+- **Frontend**: Bootstrap 5, jQuery, DataTables
+- **Excel**: PhpSpreadsheet 3.3
+- **Icons**: Bootstrap Icons
+
+## Kontribusi
+
+Untuk berkontribusi, silakan fork repository dan buat pull request untuk fitur baru atau perbaikan bug.
+
+## Lisensi
+
+MIT License
+
+## Dukungan
+
+Untuk pertanyaan dan dukungan, silakan hubungi tim pengembang.
