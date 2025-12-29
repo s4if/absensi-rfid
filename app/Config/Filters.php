@@ -37,6 +37,7 @@ class Filters extends BaseFilters
 
         // my aliases
         'loggedin'      => \App\Filters\LoggedIn::class,
+        'ratelimit'     => \App\Filters\RateLimit::class,
     ];
 
     /**

@@ -32,20 +32,39 @@ class Rfid extends BaseController
 
     public function readRfid($device_id)
     {
+        $clientIp = $this->request->getIPAddress();
+        $ipWhitelist = getenv('security.ipWhitelist');
+
+        if (!empty($ipWhitelist)) {
+            $allowedIps = array_map('trim', explode(',', $ipWhitelist));
+            if (!in_array($clientIp, $allowedIps)) {
+                log_message('warning', "Unauthorized IP access attempt from {$clientIp} for device {$device_id}");
+                return $this->failForbidden('IP address not authorized');
+            }
+        }
+
         $time = (new \DateTimeImmutable('now'));
         $time = $time->setTimezone($this->tz);
-        // karena perangkatnya sederhana, api-nya yang harus menebak!
-        $token = $this->request->getGet('token');
-        $rfid = $this->request->getGet('rfid');
+        // Get token from Authorization header (Bearer token)
+        $authHeader = $this->request->getHeaderLine('Authorization');
+        $token = null;
+        if (preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+            $token = $matches[1];
+        }
+        $rfid = $this->request->getPost('rfid');
+
+        log_message('info', "RFID check-in attempt from device {$device_id} at IP {$clientIp}, RFID: {$rfid}");
         $device_builder = $this->db->table('devices');
         $device_builder->where('id', $device_id);
         $dquery = $device_builder->get();
         $device = $dquery->getRow();
 
         if (is_null($device)) {
+            log_message('warning', "Unknown device access attempt: device_id={$device_id}, IP={$clientIp}");
             return $this->failUnauthorized('device unknown');
         }
         if ($device->token != $token) {
+            log_message('warning', "Invalid token attempt: device_id={$device_id}, IP={$clientIp}");
             return $this->failUnauthorized('token invalid');
         }
         if (is_null($rfid)) {
@@ -80,8 +99,10 @@ class Rfid extends BaseController
                     'logged_at'     => $time->getTimestamp(),
                     'device_id'     => $device_id,
                 ]);
+                log_message('info', "Teacher attendance recorded: student_id={$student->id}, device_id={$device_id}");
                 return $this->respondCreated(['msg' => 'teacher\'s attendance saved']);
             }
+            log_message('info', "Teacher already logged in: student_id={$student->id}");
             return $this->respondCreated(['msg' => "teacher has logged in"]);
         }
 
@@ -107,8 +128,10 @@ class Rfid extends BaseController
         $att_builder = $this->db->table('att_records');
         try {
             $att_builder->insert($record_data);
+            log_message('info', "Student attendance recorded: student_id={$student->id}, session_id={$sess->id}, device_id={$device_id}");
             return $this->respondCreated(['msg' => 'attendance saved']);
         } catch (\ErrorException) {
+            log_message('error', "Failed to record attendance for student_id={$student->id}, session_id={$sess->id}");
             return $this->fail('unknown error',400);
         }
 
