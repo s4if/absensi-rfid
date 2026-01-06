@@ -8,8 +8,8 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class RateLimit implements FilterInterface
 {
-    protected $maxRequests = 10;
-    protected $windowSeconds = 60;
+    protected $maxRequests = 50;
+    protected $windowSeconds = 30;
 
     public function before(RequestInterface $request, $arguments = null)
     {

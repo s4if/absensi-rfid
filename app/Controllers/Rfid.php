@@ -27,7 +27,6 @@ class Rfid extends BaseController
         } catch (\ErrorException) {
             return $this->failNotFound('rfid belum ada yang masuk');
         }
-            
     }
 
     public function readRfid($device_id)
